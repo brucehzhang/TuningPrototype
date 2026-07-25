@@ -1,7 +1,7 @@
 package com.tuning.tuningprototype.services;
 
 import com.tuning.tuningprototype.exceptions.MarketDataException;
-import com.tuning.tuningprototype.models.IndividualNews;
+import com.tuning.tuningprototype.models.IndividualNewsArticle;
 import com.tuning.tuningprototype.models.IndividualStockAggregate;
 import com.tuning.tuningprototype.models.IndividualStockTrade;
 import markets.alpaca.client.AlpacaClient;
@@ -43,9 +43,9 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
      * @param endTimestamp End timestamp in unix time
      * @return Map of tickers to the list of trades in the timespan
      */
-    public Map<String, List<IndividualStockTrade>> getHistoricalStockTradeData(List<String> tickers, long startTimestamp, long endTimestamp) {
+    public Map<String, List<IndividualStockTrade>> getStockTradeData(List<String> tickers, long startTimestamp, long endTimestamp) {
         try {
-            StockTradesResp trades = getHistoricalStockTradeDataWithPagination(tickers, startTimestamp, endTimestamp, null);
+            StockTradesResp trades = getStockTradeDataWithPagination(tickers, startTimestamp, endTimestamp, null);
             Map<String, List<IndividualStockTrade>> tradeMap = new HashMap<>();
             for (Map.Entry<String, List<StockTrade>> stockTradeEntry : trades.getTrades().entrySet()) {
                 tradeMap.put(stockTradeEntry.getKey(), stockTradeEntry.getValue().stream()
@@ -53,7 +53,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
                         .collect(Collectors.toCollection(ArrayList::new)));
             }
             while (trades.getNextPageToken() != null) {
-                trades = getHistoricalStockTradeDataWithPagination(tickers, startTimestamp, endTimestamp, trades.getNextPageToken());
+                trades = getStockTradeDataWithPagination(tickers, startTimestamp, endTimestamp, trades.getNextPageToken());
                 for (Map.Entry<String, List<StockTrade>> stockTradeEntry : trades.getTrades().entrySet()) {
                     tradeMap.putIfAbsent(stockTradeEntry.getKey(), new ArrayList<>());
                     tradeMap.get(stockTradeEntry.getKey()).addAll(stockTradeEntry.getValue().stream()
@@ -64,7 +64,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
             return tradeMap;
         } catch (ApiException apiException) {
             // TODO:: Proper logging
-            System.out.println(apiException.getMessage());
+            System.out.println("Exception occurred while getting stock trade data: " + apiException.getMessage());
             // Categorize exception into general MarketDataException.
             throw new MarketDataException(apiException.getMessage());
         }
@@ -72,9 +72,9 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
 
     // Converts Alpaca StockTrade model to readable IndividualStockTrade model to be in Market Data API response
     private IndividualStockTrade individualStockTradeMapper(StockTrade stockTrade) {
-        return new IndividualStockTrade(stockTrade.getI(),
+        return new IndividualStockTrade(Long.valueOf(stockTrade.getI()),
                 stockTrade.getP(),
-                stockTrade.getS(),
+                Long.valueOf(stockTrade.getS()),
                 stockTrade.getT(),
                 exchangeMapper(stockTrade.getZ()));
     }
@@ -93,16 +93,16 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
 
 
     /**
-     * Paginated retrieval of historical stock data.
+     * Paginated retrieval of stock data.
      *
      * @param tickers Tickers that are being retrieved
-     * @param startTimestamp Start time of historical search
-     * @param endTimestamp End time of historical search
+     * @param startTimestamp Start time of search
+     * @param endTimestamp End time of search
      * @param paginationToken paginationToken, can be null for first search
      * @return Response of all the requested stock trades in the provided window and pagination context
      * @throws ApiException Exception occurring during API call through Alpaca client
      */
-    public StockTradesResp getHistoricalStockTradeDataWithPagination(List<String> tickers, long startTimestamp, long endTimestamp, String paginationToken) throws ApiException {
+    public StockTradesResp getStockTradeDataWithPagination(List<String> tickers, long startTimestamp, long endTimestamp, String paginationToken) throws ApiException {
         OffsetDateTime start = Instant.ofEpochSecond(startTimestamp)
                 .atOffset(ZoneOffset.UTC);
         OffsetDateTime end = Instant.ofEpochSecond(endTimestamp)
@@ -128,9 +128,9 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
      * @param endTimestamp End timestamp in unix time
      * @return Map of tickers to the list of trades in the timespan
      */
-    public Map<String, List<IndividualStockAggregate>> getHistoricalStockAggregateData(List<String> tickers, String timeframe, long startTimestamp, long endTimestamp) {
+    public Map<String, List<IndividualStockAggregate>> getStockAggregateData(List<String> tickers, String timeframe, long startTimestamp, long endTimestamp) {
         try {
-            StockBarsResp stockBars = getHistoricalStockAggregateDataWithPagination(tickers, timeframe, startTimestamp, endTimestamp, null);
+            StockBarsResp stockBars = getStockAggregateDataWithPagination(tickers, timeframe, startTimestamp, endTimestamp, null);
             Map<String, List<IndividualStockAggregate>> aggregateMap = new HashMap<>();
             for (Map.Entry<String, List<StockBar>> stockBarsEntry : stockBars.getBars().entrySet()) {
                 aggregateMap.put(stockBarsEntry.getKey(), stockBarsEntry.getValue().stream()
@@ -138,7 +138,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
                         .collect(Collectors.toCollection(ArrayList::new)));
             }
             while (stockBars.getNextPageToken() != null) {
-                stockBars = getHistoricalStockAggregateDataWithPagination(tickers, timeframe, startTimestamp, endTimestamp, stockBars.getNextPageToken());
+                stockBars = getStockAggregateDataWithPagination(tickers, timeframe, startTimestamp, endTimestamp, stockBars.getNextPageToken());
                 for (Map.Entry<String, List<StockBar>> stockBarsEntry : stockBars.getBars().entrySet()) {
                     aggregateMap.putIfAbsent(stockBarsEntry.getKey(), new ArrayList<>());
                     aggregateMap.get(stockBarsEntry.getKey()).addAll(stockBarsEntry.getValue().stream()
@@ -149,7 +149,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
             return aggregateMap;
         } catch (ApiException apiException) {
             // TODO:: Proper logging
-            System.out.println(apiException.getMessage());
+            System.out.println("Exception occurred while getting stock aggregate data: " + apiException.getMessage());
             // Categorize exception into general MarketDataException.
             throw new MarketDataException(apiException.getMessage());
         }
@@ -170,17 +170,17 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
     }
 
     /**
-     * Paginated retrieval of historical stock aggregate data.
+     * Paginated retrieval of stock aggregate data.
      *
      * @param tickers Tickers that are being retrieved
      * @param timeframe The timeframe for each individual aggregation ([1-59]Min, [1-24]Hour, 1Day, 1Week, [1,2,3,4,6,12]Month)
-     * @param startTimestamp Start time of historical search
-     * @param endTimestamp End time of historical search
+     * @param startTimestamp Start time of search
+     * @param endTimestamp End time of search
      * @param paginationToken paginationToken, can be null for first search
      * @return Response of all the requested stock trades in the provided window and pagination context
      * @throws ApiException Exception occurring during API call through Alpaca client
      */
-    public StockBarsResp getHistoricalStockAggregateDataWithPagination(List<String> tickers, String timeframe, long startTimestamp, long endTimestamp, String paginationToken) throws ApiException {
+    public StockBarsResp getStockAggregateDataWithPagination(List<String> tickers, String timeframe, long startTimestamp, long endTimestamp, String paginationToken) throws ApiException {
         OffsetDateTime start = Instant.ofEpochSecond(startTimestamp)
                 .atOffset(ZoneOffset.UTC);
         OffsetDateTime end = Instant.ofEpochSecond(endTimestamp)
@@ -193,5 +193,92 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
                 null,
                 paginationToken,
                 Sort.ASC);
+    }
+
+    /**
+     * Returns map of all news articles for the given tickers and start and end times.
+     *
+     * @param tickers Tickers for checking the trades
+     * @param startTimestamp Start timestamp in unix time
+     * @param endTimestamp End timestamp in unix time
+     * @return Map of tickers to the list of trades in the timespan
+     */
+    public Map<String, List<IndividualNewsArticle>> getNewsData(List<String> tickers, long startTimestamp, long endTimestamp) {
+        try {
+            NewsResp newsArticles = getNewsDataWithPagination(tickers, startTimestamp, endTimestamp, null);
+            Map<String, List<IndividualNewsArticle>> newsArticleMap = new HashMap<>();
+            // Setup article map for each ticker
+            tickers.forEach(ticker -> newsArticleMap.put(ticker, new ArrayList<>()));
+            for (News news : newsArticles.getNews()) {
+                for (String tickerSymbol : news.getSymbols()) {
+                    if (newsArticleMap.containsKey(tickerSymbol)) {
+                        newsArticleMap.get(tickerSymbol).add(individualNewsArticleMapper(news));
+                    }
+                }
+            }
+            while (newsArticles.getNextPageToken() != null) {
+                newsArticles = getNewsDataWithPagination(tickers, startTimestamp, endTimestamp, newsArticles.getNextPageToken());
+                for (News news : newsArticles.getNews()) {
+                    for (String tickerSymbol : news.getSymbols()) {
+                        if (newsArticleMap.containsKey(tickerSymbol)) {
+                            newsArticleMap.get(tickerSymbol).add(individualNewsArticleMapper(news));
+                        }
+                    }
+                }
+            }
+            return newsArticleMap;
+        } catch (ApiException apiException) {
+            // TODO:: Proper logging
+            System.out.println("Exception occurred while getting news data: " + apiException.getMessage());
+            // Categorize exception into general MarketDataException.
+            throw new MarketDataException(apiException.getMessage());
+        }
+    }
+
+    // Converts Alpaca News model to standardized IndividualNewsArticle model to be in Market Data API response.
+    // The models are pretty much exactly the same, but we're mapping to IndividualNewsArticle for the sake of decoupling.
+    private IndividualNewsArticle individualNewsArticleMapper(News newsArticle) {
+        return new IndividualNewsArticle(
+                newsArticle.getAuthor(),
+                newsArticle.getContent(),
+                newsArticle.getCreatedAt(),
+                newsArticle.getHeadline(),
+                newsArticle.getId(),
+                newsArticle.getImages().stream()
+                        .map(image -> new IndividualNewsArticle.Image(image.getSize().getValue(), image.getUrl()))
+                        .collect(Collectors.toCollection(ArrayList::new)),
+                newsArticle.getSource(),
+                newsArticle.getSummary(),
+                newsArticle.getSymbols(),
+                newsArticle.getUpdatedAt(),
+                newsArticle.getUrl()
+        );
+    }
+
+    /**
+     * Paginated retrieval of news data.
+     *
+     * @param tickers Tickers that are being retrieved
+     * @param startTimestamp Start time of search
+     * @param endTimestamp End time of search
+     * @param paginationToken paginationToken, can be null for first search
+     * @return Response of all the requested stock trades in the provided window and pagination context
+     * @throws ApiException Exception occurring during API call through Alpaca client
+     */
+    public NewsResp getNewsDataWithPagination(List<String> tickers, long startTimestamp, long endTimestamp, String paginationToken) throws ApiException {
+        OffsetDateTime start = Instant.ofEpochSecond(startTimestamp)
+                .atOffset(ZoneOffset.UTC);
+        OffsetDateTime end = Instant.ofEpochSecond(endTimestamp)
+                .atOffset(ZoneOffset.UTC);
+
+        return _newsApiClient.news(
+                start,
+                end,
+                "asc",
+                String.join(",", tickers),
+                50,
+                true,
+                true,
+                paginationToken);
     }
 }

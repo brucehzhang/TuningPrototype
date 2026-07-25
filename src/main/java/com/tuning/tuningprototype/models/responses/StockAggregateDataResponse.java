@@ -14,5 +14,4 @@ public record StockAggregateDataResponse(
         // Start time, defaults to current time if null
         Long startTime,
         // End time, defaults to start time + 15 minutes if null
-        Long endTime) {
-}
+        Long endTime) {}

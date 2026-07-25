@@ -12,5 +12,4 @@ public record IndividualStockAggregate(
         OffsetDateTime dateTime,
         Long volume,
         Double volumeWeightedAveragePrice
-) {
-}
+) {}

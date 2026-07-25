@@ -5,11 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -41,7 +37,7 @@ public class Experiment {
 
     /**
      * The main prompt written by the user that denotes the stock trading strategy used for backtesting against
-     * historical market data.
+     * market data.
      * Ex: 'You are a stock trader with a focus on the technology sector. You typically trade based off of Long-term
      * growth and R&D investment from earning reports, but make judgments for holding, selling, or buying in through
      * sentiments in current events.'

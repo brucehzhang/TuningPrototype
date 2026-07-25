@@ -4,9 +4,8 @@ import java.time.OffsetDateTime;
 
 // Individual stock trade details in a more easily readable format
 public record IndividualStockTrade(
-        Integer tradeId,
+        Long tradeId,
         Double price,
-        Integer tradeSize,
+        Long tradeSize,
         OffsetDateTime dateTime,
-        String exchangeGroup) {
-}
+        String exchangeGroup) {}
