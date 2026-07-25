@@ -4,7 +4,7 @@ import java.util.List;
 
 // Request for stock trade data, such as how many shares were bought at which exchange at what time.
 public record StockTradeDataRequest(
-        // Tickets to be returned
+        // Tickers to be returned
         List<String> tickers,
         // Start time, defaults to current time if null
         Long startTime,

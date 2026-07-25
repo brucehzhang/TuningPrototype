@@ -18,7 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 
-//Experiment is the top level entity that a user will create to test an LLM and prompt
+//Experiment is the top level entity that a user will create to test an agent with a provided strategy prompt
 public class Experiment {
 
     /**

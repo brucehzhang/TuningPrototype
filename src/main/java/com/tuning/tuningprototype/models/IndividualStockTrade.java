@@ -1,12 +1,12 @@
 package com.tuning.tuningprototype.models;
 
-import java.math.BigInteger;
+import java.time.OffsetDateTime;
 
-// Individual stock trade
+// Individual stock trade details in a more easily readable format
 public record IndividualStockTrade(
         Integer tradeId,
         Double price,
-        Long tradeSize,
-        String dateTime,
-        String exchange) {
+        Integer tradeSize,
+        OffsetDateTime dateTime,
+        String exchangeGroup) {
 }

@@ -1,6 +1,9 @@
 package com.tuning.tuningprototype.controllers;
 
+import com.tuning.tuningprototype.models.requests.NewsDataRequest;
+import com.tuning.tuningprototype.models.requests.StockAggregateDataRequest;
 import com.tuning.tuningprototype.models.requests.StockTradeDataRequest;
+import com.tuning.tuningprototype.models.responses.StockAggregateDataResponse;
 import com.tuning.tuningprototype.models.responses.StockTradeDataResponse;
 import com.tuning.tuningprototype.services.IMarketAnalysisService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,9 +40,39 @@ public class MarketDataController {
                     : Instant.ofEpochSecond(startTime).plus(15, ChronoUnit.MINUTES).getEpochSecond();
             return ResponseEntity.ok(
                     new StockTradeDataResponse(_alpacaMarketAnalysisService.getHistoricalStockTradeData(
-                            stockTradeDataRequest.tickers(), startTime, endTime)));
+                            stockTradeDataRequest.tickers(), startTime, endTime), startTime, endTime));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(String.format("Error getting historical stock trade data: %s", e.getMessage()));
         }
     }
+
+    @PostMapping("/historical/stocks/aggregates")
+    public ResponseEntity<?> fetchHistoricalStockTradeData(@RequestBody StockAggregateDataRequest stockAggregateDataRequest) {
+        try {
+            // TODO:: More validations, probably shared helper method
+            long startTime = stockAggregateDataRequest.startTime() != null
+                    ? stockAggregateDataRequest.startTime()
+                    : Instant.now().minus(15, ChronoUnit.MINUTES).getEpochSecond();
+            long endTime = stockAggregateDataRequest.endTime() != null
+                    ? stockAggregateDataRequest.endTime()
+                    : Instant.ofEpochSecond(startTime).plus(15, ChronoUnit.MINUTES).getEpochSecond();
+            return ResponseEntity.ok(
+                    new StockAggregateDataResponse(_alpacaMarketAnalysisService.getHistoricalStockAggregateData(
+                            stockAggregateDataRequest.tickers(), stockAggregateDataRequest.timeframe(), startTime, endTime),
+                            stockAggregateDataRequest.timeframe(), startTime, endTime));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(String.format("Error getting historical stock aggregate data: %s", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/historical/news")
+    public ResponseEntity<?> fetchHistoricalNewsData(@RequestBody NewsDataRequest newsDataRequest) {
+        try {
+            // TODO:: Implement this
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(String.format("Error getting historical stock aggregate data: %s", e.getMessage()));
+        }
+    }
+
 }
