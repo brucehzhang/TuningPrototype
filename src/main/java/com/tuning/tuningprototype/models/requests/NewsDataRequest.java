@@ -6,7 +6,7 @@ import java.util.List;
 public record NewsDataRequest(
         // Tickers for news to be returned for
         List<String> tickers,
-        // Start time, defaults to current time if null
+        // Start time in unix seconds, defaults to current time if null
         Long startTime,
-        // End time, defaults to start time + 15 minutes if null
+        // End time in unix seconds, defaults to start time + 15 minutes if null
         Long endTime) {}

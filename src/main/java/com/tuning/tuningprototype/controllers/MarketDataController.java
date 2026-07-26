@@ -7,6 +7,8 @@ import com.tuning.tuningprototype.models.responses.NewsDataResponse;
 import com.tuning.tuningprototype.models.responses.StockAggregateDataResponse;
 import com.tuning.tuningprototype.models.responses.StockTradeDataResponse;
 import com.tuning.tuningprototype.services.IMarketAnalysisService;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +31,18 @@ public class MarketDataController {
         _alpacaMarketAnalysisService = alpacaMarketAnalysisService;
     }
 
+    /**
+     * Api and MCP tool for fetching individual stock trades based on provided tickers in the provided start and end time window.
+     * The data size can be large, so smaller time windows of 1 hour is recommended
+     *
+     * @param stockTradeDataRequest Request payload with tickers, start, and end time
+     * @return 200 with tickers mapped to individual stock trades, 500 if server error
+     */
     @PostMapping("/stocks/trades")
-    public ResponseEntity<?> fetchStockTradeData(@RequestBody StockTradeDataRequest stockTradeDataRequest) {
+    @McpTool(description = "Fetches all of the individual trades for the requested stock tickers that have occurred between the start and end time window.")
+    public ResponseEntity<?> fetchStockTradeData(
+            @McpToolParam(description = "Structured object containing list of tickers (ex. GOOG, AAPL), start time in unix time, and end time in unix time")
+            @RequestBody StockTradeDataRequest stockTradeDataRequest) {
         try {
             // TODO:: More validations, probably shared helper method
             long startTime = stockTradeDataRequest.startTime() != null
@@ -43,12 +55,21 @@ public class MarketDataController {
                     new StockTradeDataResponse(_alpacaMarketAnalysisService.getStockTradeData(
                             stockTradeDataRequest.tickers(), startTime, endTime), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(String.format("Error getting stock trade data: %s", e.getMessage()));
+            return ResponseEntity.internalServerError().body(String.format("Error getting stock trade data: %s", e.getMessage()));
         }
     }
 
+    /**
+     * Api and MCP tool for fetching stock based on provided tickers aggregated by timeframe in the provided start and end time window.
+     *
+     * @param stockAggregateDataRequest Request payload with tickers, timeframe for the aggregate, start, and end time
+     * @return 200 with tickers mapped to stock data aggregated in the user provided timeframe, 500 if server error
+     */
     @PostMapping("/stocks/aggregates")
-    public ResponseEntity<?> fetchStockTradeData(@RequestBody StockAggregateDataRequest stockAggregateDataRequest) {
+    @McpTool(description = "Fetches stock price details aggregated by a provided timeframe for the requested stock tickers that have occurred between the start and end time window.")
+    public ResponseEntity<?> fetchStockAggregateData(
+            @McpToolParam(description = "Structured object containing list of tickers (ex. GOOG, AAPL), timeframe for each aggregated stock price detail (Ex: [1-59]Min, [1-24]Hour, 1Day, 1Week, [1,2,3,4,6,12]Month), start time in unix time, and end time in unix time")
+            @RequestBody StockAggregateDataRequest stockAggregateDataRequest) {
         try {
             // TODO:: More validations, probably shared helper method
             long startTime = stockAggregateDataRequest.startTime() != null
@@ -62,12 +83,21 @@ public class MarketDataController {
                             stockAggregateDataRequest.tickers(), stockAggregateDataRequest.timeframe(), startTime, endTime),
                             stockAggregateDataRequest.timeframe(), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(String.format("Error getting stock aggregate data: %s", e.getMessage()));
+            return ResponseEntity.internalServerError().body(String.format("Error getting stock aggregate data: %s", e.getMessage()));
         }
     }
 
+    /**
+     * Api and MCP tool for fetching news data based on provided tickers in the start and end time window.
+     *
+     * @param newsDataRequest Request payload with tickers, start, and end time
+     * @return 200 with tickers mapped to news articles, 500 if server error
+     */
     @PostMapping("/news")
-    public ResponseEntity<?> fetchNewsData(@RequestBody NewsDataRequest newsDataRequest) {
+    @McpTool(description = "Fetches financial news for the requested stock tickers that have occurred between the start and end time window.")
+    public ResponseEntity<?> fetchNewsData(
+            @McpToolParam(description = "Structured object containing list of tickers (ex. GOOG, AAPL), start time in unix time, and end time in unix time")
+            @RequestBody NewsDataRequest newsDataRequest) {
         try {
             // TODO:: More validations, probably shared helper method
             long startTime = newsDataRequest.startTime() != null
@@ -80,7 +110,7 @@ public class MarketDataController {
                     new NewsDataResponse(_alpacaMarketAnalysisService.getNewsData(
                             newsDataRequest.tickers(), startTime, endTime), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(String.format("Error getting news data: %s", e.getMessage()));
+            return ResponseEntity.internalServerError().body(String.format("Error getting news data: %s", e.getMessage()));
         }
     }
 

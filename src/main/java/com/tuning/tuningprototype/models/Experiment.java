@@ -13,7 +13,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-
 //Experiment is the top level entity that a user will create to test an agent with a provided strategy prompt
 public class Experiment {
 

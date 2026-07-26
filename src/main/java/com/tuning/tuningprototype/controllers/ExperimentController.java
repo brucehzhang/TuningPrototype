@@ -39,6 +39,7 @@ public class ExperimentController {
 
     /**
      * Gets an experiment by the id.
+     *
      * @param id - id of the experiment
      * @return ExperimentDto record
      */

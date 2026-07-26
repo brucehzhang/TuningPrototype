@@ -6,9 +6,9 @@ import java.util.List;
 public record StockAggregateDataRequest(
         // Tickers to be returned
         List<String> tickers,
-        // Timeframe used to split up individual aggregate groupings
+        // Timeframe used to split up individual aggregate groupings. Available groupings: ([1-59]Min, [1-24]Hour, 1Day, 1Week, [1,2,3,4,6,12]Month)
         String timeframe,
-        // Start time, defaults to current time if null
+        // Start time in unix seconds, defaults to current time if null
         Long startTime,
-        // End time, defaults to start time + 15 minutes if null
+        // End time in unix seconds, defaults to start time + 15 minutes if null
         Long endTime) {}
