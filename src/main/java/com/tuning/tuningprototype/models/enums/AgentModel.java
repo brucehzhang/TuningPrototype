@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.models.enums;
 
-public enum AgentModels {
+public enum AgentModel {
     CLAUDE_HAIKU_4_5,
     CLAUDE_SONNET_4_6,
     CLAUDE_SONNET_5,
