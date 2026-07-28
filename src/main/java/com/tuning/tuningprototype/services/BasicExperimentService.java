@@ -1,12 +1,14 @@
 package com.tuning.tuningprototype.services;
 
 import com.tuning.tuningprototype.models.ExperimentDto;
+import com.tuning.tuningprototype.models.UserDto;
 import com.tuning.tuningprototype.models.enums.AgentModel;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.enums.SamplingWindow;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service("basicExperimentService")
@@ -27,6 +29,9 @@ public class BasicExperimentService implements IExperimentService {
                 ExperimentStatus.DRAFT,
                 1784421014L,
                 123L,
-                1784421014L));
+                null,
+                1784421014L,
+                new ArrayList<>(),
+                new ArrayList<>()));
     }
 }

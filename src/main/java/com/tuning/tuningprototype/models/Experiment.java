@@ -3,13 +3,12 @@ package com.tuning.tuningprototype.models;
 import com.tuning.tuningprototype.models.enums.AgentModel;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.enums.SamplingWindow;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "experiments")
 //Experiment is the top level entity that a user will create to test an agent with a provided strategy prompt
 public class Experiment {
 
@@ -84,12 +84,28 @@ public class Experiment {
     private Long createdTime;
 
     /**
-     * The id of the user that created this experiment
+     * The user that created this experiment. Lazy — stays a proxy until accessed.
      */
-    private Long createdByUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdByUser;
 
     /**
      * The Unix time of when the experiment was last modified by the user
      */
     private Long modifiedTime;
+
+    /**
+     * Samples taken during this experiment. Lazy.
+     */
+    @OneToMany(mappedBy = "experiment", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Sample> samples = new ArrayList<>();
+
+    /**
+     * Wallets associated with this experiment. Lazy.
+     */
+    @OneToMany(mappedBy = "experiment", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Wallet> wallets = new ArrayList<>();
 }

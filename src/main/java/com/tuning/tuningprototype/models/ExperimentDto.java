@@ -3,10 +3,11 @@ package com.tuning.tuningprototype.models;
 import com.tuning.tuningprototype.models.enums.AgentModel;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.enums.SamplingWindow;
-
 import java.math.BigDecimal;
+import java.util.List;
 
-// Dto record for creating and manipulating experiments
+// Dto record for creating and manipulating experiments.
+// `createdByUserId` is always available; `createdByUser` is null unless explicitly fetched.
 public record ExperimentDto(
         Long id,
         String name,
@@ -20,4 +21,7 @@ public record ExperimentDto(
         ExperimentStatus experimentStatus,
         Long createdTime,
         Long createdByUserId,
-        Long modifiedTime) {}
+        UserDto createdByUser,
+        Long modifiedTime,
+        List<SampleDto> samples,
+        List<WalletDto> wallets) {}

@@ -33,7 +33,7 @@ CREATE TABLE users (
                        modified_at DATETIME NOT NULL,
                        PRIMARY KEY (id),
                        CONSTRAINT fk_users_accounts
-                           FOREIGN KEY (account_id) REFERENCES users (id)
+                           FOREIGN KEY (account_id) REFERENCES accounts (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE experiments (
@@ -106,7 +106,7 @@ CREATE TABLE purchase_lots (
                                CONSTRAINT fk_purchase_lot_purchase_decision
                                    FOREIGN KEY (purchase_decision_id) REFERENCES decisions (id),
                                CONSTRAINT fk_purchase_lot_wallet
-                                   FOREIGN KEY (wallet_id) REFERENCES wallet (id)
+                                   FOREIGN KEY (wallet_id) REFERENCES wallets (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE asset_sales (
@@ -122,5 +122,5 @@ CREATE TABLE asset_sales (
                              CONSTRAINT fk_asset_sale_sale_decision
                                  FOREIGN KEY (sale_decision_id) REFERENCES decisions (id),
                              CONSTRAINT fk_asset_sale_purchase_lot
-                                 FOREIGN KEY (purchase_lot_id) REFERENCES purchase_lot (id)
+                                 FOREIGN KEY (purchase_lot_id) REFERENCES purchase_lots (id)
 ) ENGINE = InnoDB;
