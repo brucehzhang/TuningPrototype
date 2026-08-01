@@ -7,6 +7,8 @@ public enum AgentModel {
     CLAUDE_OPUS_4_6,
     CLAUDE_OPUS_4_7,
     CLAUDE_OPUS_4_8,
+    CLAUDE_OPUS_5,
+    CLAUDE_FABLE_5,
     GPT_5_4,
     GPT_5_4_NANO,
     GPT_5_4_MINI,
