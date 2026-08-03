@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.repositories;
 
-import com.tuning.tuningprototype.models.Decision;
+import com.tuning.tuningprototype.models.db.Decision;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,50 +10,34 @@ import java.util.Optional;
 public interface DecisionRepository extends JpaRepository<Decision, Long> {
 
     /**
-     * Plain lookup — sample proxy, purchaseLots and assetSales collections stay uninitialized.
+     * Plain lookup — purchaseLots and assetSales collections stay uninitialized.
+     * No parent association to fetch since @ManyToOne to Sample was removed.
      */
     Optional<Decision> findById(Long id);
 
     /**
-     * Fetches the decision with its parent sample initialized.
-     */
-    @EntityGraph(attributePaths = {"sample"})
-    Optional<Decision> findWithSampleById(Long id);
-
-    /**
-     * Fetches the decision with its sample AND that sample's parent experiment initialized —
-     * demonstrates a nested attribute path spanning two levels.
-     */
-    @EntityGraph(attributePaths = {"sample.experiment"})
-    Optional<Decision> findWithSampleAndExperimentById(Long id);
-
-    /**
-     * Fetches the decision with its resulting purchase lots initialized.
+     * Fetches the decision with its resulting purchase lots initialized in one query.
      */
     @EntityGraph(attributePaths = {"purchaseLots"})
     Optional<Decision> findWithPurchaseLotsById(Long id);
 
     /**
-     * Fetches the decision with its resulting asset sales initialized.
+     * Fetches the decision with its resulting asset sales initialized in one query.
      */
     @EntityGraph(attributePaths = {"assetSales"})
     Optional<Decision> findWithAssetSalesById(Long id);
 
     /**
-     * Fetches the decision with both purchase lots and asset sales initialized.
+     * Fetches the decision with purchase lots eagerly joined. assetSales is
+     * intentionally excluded — both are List (bag) collections, and fetch-joining
+     * two sibling bags in one query throws MultipleBagFetchException. Rely on
+     * @BatchSize on Decision.assetSales for efficient lazy access if touched afterward.
      */
-    @EntityGraph(attributePaths = {"purchaseLots", "assetSales"})
-    Optional<Decision> findWithChildrenById(Long id);
-
-    /**
-     * Fetches the decision with everything initialized.
-     */
-    @EntityGraph(attributePaths = {"sample", "purchaseLots", "assetSales"})
+    @EntityGraph(attributePaths = {"purchaseLots"})
     Optional<Decision> findFullyHydratedById(Long id);
 
     /**
-     * All decisions for a given sample, with the sample initialized.
+     * All decisions for a given sample, via the plain FK column.
      */
-    @EntityGraph(attributePaths = {"sample"})
-    List<Decision> findWithSampleBySample_Id(Long sampleId);
+    List<Decision> findBySampleId(Long sampleId);
 }

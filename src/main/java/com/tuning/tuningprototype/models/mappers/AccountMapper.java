@@ -1,7 +1,7 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Account;
-import com.tuning.tuningprototype.models.AccountDto;
+import com.tuning.tuningprototype.models.db.Account;
+import com.tuning.tuningprototype.models.db.AccountDto;
 
 public interface AccountMapper {
     AccountDto toDto(Account account);

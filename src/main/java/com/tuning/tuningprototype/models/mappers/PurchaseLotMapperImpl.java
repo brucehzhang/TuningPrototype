@@ -1,56 +1,46 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Decision;
-import com.tuning.tuningprototype.models.PurchaseLot;
-import com.tuning.tuningprototype.models.PurchaseLotDto;
-import com.tuning.tuningprototype.models.Wallet;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.PurchaseLot;
+import com.tuning.tuningprototype.models.db.PurchaseLotDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class PurchaseLotMapperImpl implements PurchaseLotMapper {
 
-    @Lazy
-    private final DecisionMapper decisionMapper;
-    @Lazy
-    private final WalletMapper walletMapper;
-    @Lazy
-    private final AssetSaleMapper assetSaleMapper;
+    private final AssetSaleMapper _assetSaleMapper;
+
+    public PurchaseLotMapperImpl(@Lazy AssetSaleMapper assetSaleMapper) {
+        _assetSaleMapper = assetSaleMapper;
+    }
 
     @Override
     public PurchaseLotDto toDto(PurchaseLot purchaseLot) {
         if (purchaseLot == null) return null;
 
-        Decision purchaseDecision = purchaseLot.getPurchaseDecision();
-        Wallet wallet = purchaseLot.getWallet();
-
         return new PurchaseLotDto(
                 purchaseLot.getId(),
-                purchaseDecision != null ? purchaseDecision.getId() : null,
-                Hibernate.isInitialized(purchaseDecision) ? decisionMapper.toDto(purchaseDecision) : null,
-                wallet != null ? wallet.getId() : null,
-                Hibernate.isInitialized(wallet) ? walletMapper.toDto(wallet) : null,
+                purchaseLot.getPurchaseDecisionId(),
+                purchaseLot.getWalletId(),
                 purchaseLot.getTicker(),
                 purchaseLot.getPurchasePrice(),
                 purchaseLot.getPurchaseAmount(),
                 purchaseLot.getCreatedTime(),
                 purchaseLot.getModifiedTime(),
                 Hibernate.isInitialized(purchaseLot.getAssetSales())
-                        ? purchaseLot.getAssetSales().stream().map(assetSaleMapper::toDto).toList() : null
+                        ? purchaseLot.getAssetSales().stream().map(_assetSaleMapper::toDto).toList() : null
         );
     }
 
     @Override
-    public PurchaseLot toEntity(PurchaseLotDto dto, Decision decisionReference, Wallet walletReference) {
+    public PurchaseLot toEntity(PurchaseLotDto dto) {
         if (dto == null) return null;
 
         return PurchaseLot.builder()
                 .id(dto.id())
-                .purchaseDecision(decisionReference)
-                .wallet(walletReference)
+                .purchaseDecisionId(dto.purchaseDecisionId())
+                .walletId(dto.walletId())
                 .ticker(dto.ticker())
                 .purchasePrice(dto.purchasePrice())
                 .purchaseAmount(dto.purchaseAmount())

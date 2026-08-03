@@ -1,10 +1,12 @@
-package com.tuning.tuningprototype.models;
+package com.tuning.tuningprototype.models.db;
 
+import com.tuning.tuningprototype.models.converters.UnixTimestampConverter;
 import com.tuning.tuningprototype.models.enums.AgentModel;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.enums.SamplingWindow;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,12 +32,15 @@ public class Experiment {
     /**
      * Name assigned to the experiment, either default or by the User
      */
+    @Column(name = "name", nullable = false, length = 200)
     private String name;
 
     /**
      * The main model being used to run the experiment
      * Ex: 'CLAUDE_OPUS_4_7'
      */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "agent_model", nullable = false, length = 50)
     private AgentModel agentModel;
 
     /**
@@ -46,66 +51,82 @@ public class Experiment {
      * sentiments in current events.'
      *
      */
+    @Column(name = "strategy_prompt", nullable = false, length = 10000)
     private String strategyPrompt;
 
     /**
      * The rolling windows that the experiment will be checking market data and potentially making decisions at.
      */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sampling_window", nullable = false, length = 50)
     private SamplingWindow samplingWindow;
 
     /**
      * The amount of money that the experiment should start its backtest with
      */
+    @Column(name = "starting_money_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal startingMoneyAmount;
 
     /**
      * The currency code of the money, defaults to USD.
      */
+    @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
 
     /**
      * Start of experiment in Unix time
      */
+    @Column(name = "experiment_start_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long experimentStartTime;
 
     /**
      * End of experiment in Unix time
      */
+    @Column(name = "experiment_end_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long experimentEndTime;
 
     /**
      * The status of the experiment, whether it is in draft, in progress, completed, failed, etc
      */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "experiment_status", nullable = false, length = 50)
     private ExperimentStatus experimentStatus;
 
     /**
      * The Unix time of when the experiment was created by the user
      */
+    @Column(name = "created_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long createdTime;
 
     /**
-     * The user that created this experiment. Lazy — stays a proxy until accessed.
+     * The id of the user that created this experiment.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_user_id", nullable = false)
-    private User createdByUser;
+    @Column(name = "created_user_id", nullable = false)
+    private Long createdUserId;
 
     /**
      * The Unix time of when the experiment was last modified by the user
      */
+    @Column(name = "modified_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long modifiedTime;
 
     /**
      * Samples taken during this experiment. Lazy.
      */
-    @OneToMany(mappedBy = "experiment", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "experimentId", fetch = FetchType.LAZY)
     @Builder.Default
+    @BatchSize(size = 20)
     private List<Sample> samples = new ArrayList<>();
 
     /**
      * Wallets associated with this experiment. Lazy.
      */
-    @OneToMany(mappedBy = "experiment", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "experimentId", fetch = FetchType.LAZY)
     @Builder.Default
+    @BatchSize(size = 20)
     private List<Wallet> wallets = new ArrayList<>();
 }

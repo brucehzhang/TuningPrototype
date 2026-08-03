@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.repositories;
 
-import com.tuning.tuningprototype.models.Account;
+import com.tuning.tuningprototype.models.db.Account;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,7 +14,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findById(Long id);
 
     /**
-     * Fetches the account with its users initialized.
+     * Fetches the account with its users initialized in one query.
      */
     @EntityGraph(attributePaths = {"users"})
     Optional<Account> findWithUsersById(Long id);

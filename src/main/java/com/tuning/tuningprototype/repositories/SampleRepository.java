@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.repositories;
 
-import com.tuning.tuningprototype.models.Sample;
+import com.tuning.tuningprototype.models.db.Sample;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,31 +10,25 @@ import java.util.Optional;
 public interface SampleRepository extends JpaRepository<Sample, Long> {
 
     /**
-     * Plain lookup — experiment proxy and decisions collection stay uninitialized.
+     * Plain lookup — decisions collection stays uninitialized.
+     * No parent association to fetch since @ManyToOne to Experiment was removed.
      */
     Optional<Sample> findById(Long id);
 
     /**
-     * Fetches the sample with its parent experiment initialized.
-     */
-    @EntityGraph(attributePaths = {"experiment"})
-    Optional<Sample> findWithExperimentById(Long id);
-
-    /**
-     * Fetches the sample with its decisions initialized.
+     * Fetches the sample with its decisions initialized in one query.
      */
     @EntityGraph(attributePaths = {"decisions"})
     Optional<Sample> findWithDecisionsById(Long id);
 
     /**
-     * Fetches the sample with both experiment and decisions initialized.
+     * All samples for a given experiment, via the plain FK column.
      */
-    @EntityGraph(attributePaths = {"experiment", "decisions"})
-    Optional<Sample> findFullyHydratedById(Long id);
+    List<Sample> findByExperimentId(Long experimentId);
 
     /**
-     * All samples for a given experiment, with the experiment initialized.
+     * All samples for a given experiment, with decisions initialized per row.
      */
-    @EntityGraph(attributePaths = {"experiment"})
-    List<Sample> findWithExperimentByExperiment_Id(Long experimentId);
+    @EntityGraph(attributePaths = {"decisions"})
+    List<Sample> findWithDecisionsByExperimentId(Long experimentId);
 }

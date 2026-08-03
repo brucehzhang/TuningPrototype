@@ -1,18 +1,19 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Account;
-import com.tuning.tuningprototype.models.AccountDto;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.Account;
+import com.tuning.tuningprototype.models.db.AccountDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class AccountMapperImpl implements AccountMapper {
 
-    @Lazy
-    private final UserMapper userMapper;
+    private final UserMapper _userMapper;
+
+    public AccountMapperImpl(@Lazy UserMapper userMapper) {
+        _userMapper = userMapper;
+    }
 
     @Override
     public AccountDto toDto(Account account) {
@@ -21,10 +22,10 @@ public class AccountMapperImpl implements AccountMapper {
         return new AccountDto(
                 account.getId(),
                 account.getName(),
-                account.getCreatedAt(),
-                account.getModifiedAt(),
+                account.getCreatedTime(),
+                account.getModifiedTime(),
                 Hibernate.isInitialized(account.getUsers())
-                        ? account.getUsers().stream().map(userMapper::toDto).toList() : null
+                        ? account.getUsers().stream().map(_userMapper::toDto).toList() : null
         );
     }
 
@@ -35,8 +36,8 @@ public class AccountMapperImpl implements AccountMapper {
         return Account.builder()
                 .id(dto.id())
                 .name(dto.name())
-                .createdAt(dto.createdAt())
-                .modifiedAt(dto.modifiedAt())
+                .createdTime(dto.createdTime())
+                .modifiedTime(dto.modifiedTime())
                 .build();
     }
 }

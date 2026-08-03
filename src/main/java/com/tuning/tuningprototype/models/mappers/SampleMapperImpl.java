@@ -1,49 +1,44 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Experiment;
-import com.tuning.tuningprototype.models.Sample;
-import com.tuning.tuningprototype.models.SampleDto;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.Sample;
+import com.tuning.tuningprototype.models.db.SampleDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class SampleMapperImpl implements SampleMapper {
 
-    @Lazy
-    private final ExperimentMapper experimentMapper;
-    @Lazy
-    private final DecisionMapper decisionMapper;
+    private final DecisionMapper _decisionMapper;
+
+    public SampleMapperImpl(@Lazy DecisionMapper decisionMapper) {
+        _decisionMapper = decisionMapper;
+    }
 
     @Override
     public SampleDto toDto(Sample sample) {
         if (sample == null) return null;
 
-        Experiment experiment = sample.getExperiment();
-
         return new SampleDto(
                 sample.getId(),
-                experiment != null ? experiment.getId() : null,
-                Hibernate.isInitialized(experiment) ? experimentMapper.toDto(experiment) : null,
+                sample.getExperimentId(),
                 sample.getMarketInsights(),
                 sample.getSamplingTime(),
                 sample.getSamplingStatus(),
                 sample.getCreatedTime(),
                 sample.getModifiedTime(),
                 Hibernate.isInitialized(sample.getDecisions())
-                        ? sample.getDecisions().stream().map(decisionMapper::toDto).toList() : null
+                        ? sample.getDecisions().stream().map(_decisionMapper::toDto).toList() : null
         );
     }
 
     @Override
-    public Sample toEntity(SampleDto dto, Experiment experimentReference) {
+    public Sample toEntity(SampleDto dto) {
         if (dto == null) return null;
 
         return Sample.builder()
                 .id(dto.id())
-                .experiment(experimentReference)
+                .experimentId(dto.experimentId())
                 .marketInsights(dto.marketInsights())
                 .samplingTime(dto.samplingTime())
                 .samplingStatus(dto.samplingStatus())

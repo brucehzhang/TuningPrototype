@@ -25,14 +25,14 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================================
 -- ACCOUNTS
 -- ============================================================================
-INSERT INTO accounts (id, name, created_at, modified_at) VALUES
+INSERT INTO accounts (id, name, created_time, modified_time) VALUES
                                                              (1, 'Acme Trading Research', '2026-01-01 09:00:00', '2026-01-01 09:00:00'),
                                                              (2, 'Solo Backtest Labs',    '2026-01-05 09:00:00', '2026-01-05 09:00:00');
 
 -- ============================================================================
 -- USERS
 -- ============================================================================
-INSERT INTO users (id, first_name, middle_name, last_name, account_id, license_type, created_at, modified_at) VALUES
+INSERT INTO users (id, first_name, middle_name, last_name, account_id, license_type, created_time, modified_time) VALUES
                                                                                                                   (1, 'Jane',  NULL,   'Doe',     1, 'ENTERPRISE', '2026-01-01 09:05:00', '2026-01-01 09:05:00'),
                                                                                                                   (2, 'Sam',   'R.',   'Nguyen',  1, 'PREMIUM',    '2026-01-02 10:00:00', '2026-01-02 10:00:00'),
                                                                                                                   (3, 'Alex',  NULL,   NULL,      2, 'FREE',       '2026-01-05 09:10:00', '2026-01-05 09:10:00');
@@ -44,7 +44,7 @@ INSERT INTO experiments (
     id, name, agent_model, strategy_prompt, sampling_window,
     starting_money_amount, currency_code,
     experiment_start_time, experiment_end_time, experiment_status,
-    created_time, created_by_user_id, modified_time
+    created_time, created_user_id, modified_time
 ) VALUES
       (1, 'Tech Growth Momentum',
        'CLAUDE_OPUS_4_7',

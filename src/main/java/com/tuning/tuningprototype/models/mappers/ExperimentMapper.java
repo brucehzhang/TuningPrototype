@@ -1,10 +1,9 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Experiment;
-import com.tuning.tuningprototype.models.ExperimentDto;
-import com.tuning.tuningprototype.models.User;
+import com.tuning.tuningprototype.models.db.Experiment;
+import com.tuning.tuningprototype.models.db.ExperimentDto;
 
 public interface ExperimentMapper {
     ExperimentDto toDto(Experiment experiment);
-    Experiment toEntity(ExperimentDto dto, User createdByUserReference);
+    Experiment toEntity(ExperimentDto dto);
 }

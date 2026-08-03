@@ -1,37 +1,44 @@
 package com.tuning.tuningprototype.services;
 
-import com.tuning.tuningprototype.models.ExperimentDto;
-import com.tuning.tuningprototype.models.UserDto;
-import com.tuning.tuningprototype.models.enums.AgentModel;
-import com.tuning.tuningprototype.models.enums.ExperimentStatus;
-import com.tuning.tuningprototype.models.enums.SamplingWindow;
+import com.tuning.tuningprototype.models.db.Experiment;
+import com.tuning.tuningprototype.models.db.ExperimentDto;
+import com.tuning.tuningprototype.models.mappers.ExperimentMapper;
+import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service("basicExperimentService")
 public class BasicExperimentService implements IExperimentService {
 
+    private final ExperimentRepository _experimentRepository;
+    private final ExperimentMapper _experimentMapper;
+
+    public BasicExperimentService(ExperimentRepository experimentRepository, ExperimentMapper experimentMapper) {
+        _experimentRepository = experimentRepository;
+        _experimentMapper = experimentMapper;
+    }
+
     @Override
     public Optional<ExperimentDto> getExperiment(long id) {
-        return Optional.of(new ExperimentDto(
-                id,
-                "Sample Experiment",
-                AgentModel.CLAUDE_OPUS_4_8,
-                "You are regarded and listen to wall street bets.",
-                SamplingWindow.DAYS_1,
-                BigDecimal.ONE,
-                "USD",
-                1721349014L,
-                1752885014L,
-                ExperimentStatus.DRAFT,
-                1784421014L,
-                123L,
-                null,
-                1784421014L,
-                new ArrayList<>(),
-                new ArrayList<>()));
+        // Using wallet query, but lazy loading samples with hibernate through @BatchSize
+        return _experimentRepository.findWithWalletsById(id)
+                .map(this::loadFullyHydratedExperiment)
+                .map(_experimentMapper::toDto);
+    }
+
+    // Used for completely hydrating an experiment
+    // Expensive, do not use for bulk.
+    // TODO:: Come back and review this with pagination in mind.
+    private Experiment loadFullyHydratedExperiment(Experiment experiment) {
+        // These forEach and size calls allow Hibernate to load the nested data.
+        experiment.getWallets()
+                .forEach(wallet -> wallet.getPurchaseLots()
+                        .forEach(purchaseLot -> purchaseLot.getAssetSales().size()));
+        experiment.getSamples().forEach(sample -> sample.getDecisions().forEach(decision -> {
+            decision.getAssetSales().size();
+            decision.getPurchaseLots().size();
+        }));
+        return experiment;
     }
 }

@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.controllers;
 
-import com.tuning.tuningprototype.models.ExperimentDto;
+import com.tuning.tuningprototype.models.db.ExperimentDto;
 import com.tuning.tuningprototype.services.IExperimentService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;

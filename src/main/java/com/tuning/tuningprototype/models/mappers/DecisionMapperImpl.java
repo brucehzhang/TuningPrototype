@@ -1,34 +1,29 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Decision;
-import com.tuning.tuningprototype.models.DecisionDto;
-import com.tuning.tuningprototype.models.Sample;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.Decision;
+import com.tuning.tuningprototype.models.db.DecisionDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class DecisionMapperImpl implements DecisionMapper {
 
-    @Lazy
-    private final SampleMapper sampleMapper;
-    @Lazy
-    private final PurchaseLotMapper purchaseLotMapper;
-    @Lazy
-    private final AssetSaleMapper assetSaleMapper;
+    private final PurchaseLotMapper _purchaseLotMapper;
+    private final AssetSaleMapper _assetSaleMapper;
+
+    public DecisionMapperImpl(@Lazy PurchaseLotMapper purchaseLotMapper, @Lazy AssetSaleMapper assetSaleMapper) {
+        _purchaseLotMapper = purchaseLotMapper;
+        _assetSaleMapper = assetSaleMapper;
+    }
 
     @Override
     public DecisionDto toDto(Decision decision) {
         if (decision == null) return null;
 
-        Sample sample = decision.getSample();
-
         return new DecisionDto(
                 decision.getId(),
-                sample != null ? sample.getId() : null,
-                Hibernate.isInitialized(sample) ? sampleMapper.toDto(sample) : null,
+                decision.getSampleId(),
                 decision.getDecisionType(),
                 decision.getTicker(),
                 decision.getReasoning(),
@@ -36,19 +31,19 @@ public class DecisionMapperImpl implements DecisionMapper {
                 decision.getCreatedTime(),
                 decision.getModifiedTime(),
                 Hibernate.isInitialized(decision.getPurchaseLots())
-                        ? decision.getPurchaseLots().stream().map(purchaseLotMapper::toDto).toList() : null,
+                        ? decision.getPurchaseLots().stream().map(_purchaseLotMapper::toDto).toList() : null,
                 Hibernate.isInitialized(decision.getAssetSales())
-                        ? decision.getAssetSales().stream().map(assetSaleMapper::toDto).toList() : null
+                        ? decision.getAssetSales().stream().map(_assetSaleMapper::toDto).toList() : null
         );
     }
 
     @Override
-    public Decision toEntity(DecisionDto dto, Sample sampleReference) {
+    public Decision toEntity(DecisionDto dto) {
         if (dto == null) return null;
 
         return Decision.builder()
                 .id(dto.id())
-                .sample(sampleReference)
+                .sampleId(dto.sampleId())
                 .decisionType(dto.decisionType())
                 .ticker(dto.ticker())
                 .reasoning(dto.reasoning())

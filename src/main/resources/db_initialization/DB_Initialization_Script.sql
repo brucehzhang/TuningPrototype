@@ -17,8 +17,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE accounts (
                           id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                           name VARCHAR(200) NOT NULL,
-                          created_at DATETIME NOT NULL,
-                          modified_at DATETIME NOT NULL,
+                          created_time DATETIME NOT NULL,
+                          modified_time DATETIME NOT NULL,
                           PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 
@@ -29,8 +29,8 @@ CREATE TABLE users (
                        last_name VARCHAR(50),
                        account_id BIGINT UNSIGNED NOT NULL,
                        license_type VARCHAR(50) NOT NULL,
-                       created_at DATETIME NOT NULL,
-                       modified_at DATETIME NOT NULL,
+                       created_time DATETIME NOT NULL,
+                       modified_time DATETIME NOT NULL,
                        PRIMARY KEY (id),
                        CONSTRAINT fk_users_accounts
                            FOREIGN KEY (account_id) REFERENCES accounts (id)
@@ -48,11 +48,11 @@ CREATE TABLE experiments (
                              experiment_end_time DATETIME NOT NULL,
                              experiment_status VARCHAR(50) NOT NULL,
                              created_time DATETIME NOT NULL,
-                             created_by_user_id BIGINT UNSIGNED NOT NULL,
+                             created_user_id BIGINT UNSIGNED NOT NULL,
                              modified_time DATETIME NOT NULL,
                              PRIMARY KEY (id),
-                             CONSTRAINT fk_experiments_created_by_user
-                                 FOREIGN KEY (created_by_user_id) REFERENCES users (id)
+                             CONSTRAINT fk_experiments_created_user
+                                 FOREIGN KEY (created_user_id) REFERENCES users (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE samples (

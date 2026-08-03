@@ -1,10 +1,9 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Decision;
-import com.tuning.tuningprototype.models.DecisionDto;
-import com.tuning.tuningprototype.models.Sample;
+import com.tuning.tuningprototype.models.db.Decision;
+import com.tuning.tuningprototype.models.db.DecisionDto;
 
 public interface DecisionMapper {
     DecisionDto toDto(Decision decision);
-    Decision toEntity(DecisionDto dto, Sample sampleReference);
+    Decision toEntity(DecisionDto dto);
 }

@@ -1,7 +1,10 @@
-package com.tuning.tuningprototype.models;
+package com.tuning.tuningprototype.models.db;
 
+import com.tuning.tuningprototype.models.converters.UnixTimestampConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,48 +26,54 @@ public class PurchaseLot {
     private Long id;
 
     /**
-     * The decision that resulted in this purchase. Lazy.
+     * The id of the decision that resulted in this purchase.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_decision_id", nullable = false)
-    private Decision purchaseDecision;
+    @Column(name = "purchase_decision_id", nullable = false)
+    private Long purchaseDecisionId;
 
     /**
-     * The wallet this purchase was funded from. Lazy.
+     * The id of the wallet this purchase was funded from.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id", nullable = false)
-    private Wallet wallet;
+    @Column(name = "wallet_id", nullable = false)
+    private Long walletId;
 
     /**
      * The ticker symbol purchased
      */
+    @Column(name = "ticker", nullable = false, length = 10)
     private String ticker;
 
     /**
      * The price per unit at the time of purchase
      */
+    @Column(name = "purchase_price", nullable = false, precision = 19, scale = 4)
     private BigDecimal purchasePrice;
 
     /**
      * The amount/quantity purchased
      */
+    @Column(name = "purchase_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal purchaseAmount;
 
     /**
      * The Unix time of when the purchase lot was created
      */
+    @Column(name = "created_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long createdTime;
 
     /**
      * The Unix time of when the purchase lot was last modified
      */
+    @Column(name = "modified_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long modifiedTime;
 
     /**
      * Asset sales that closed out (fully or partially) this purchase lot. Lazy.
      */
-    @OneToMany(mappedBy = "purchaseLot", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "purchaseLotId", fetch = FetchType.LAZY)
     @Builder.Default
+    @BatchSize(size = 20)
     private List<AssetSale> assetSales = new ArrayList<>();
 }

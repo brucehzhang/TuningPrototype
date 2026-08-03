@@ -1,45 +1,40 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Account;
-import com.tuning.tuningprototype.models.User;
-import com.tuning.tuningprototype.models.UserDto;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.User;
+import com.tuning.tuningprototype.models.db.UserDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class UserMapperImpl implements UserMapper {
 
-    @Lazy
-    private final AccountMapper accountMapper;
-    @Lazy
-    private final ExperimentMapper experimentMapper;
+    private final ExperimentMapper _experimentMapper;
+
+    public UserMapperImpl(@Lazy ExperimentMapper experimentMapper) {
+        _experimentMapper = experimentMapper;
+    }
 
     @Override
     public UserDto toDto(User user) {
         if (user == null) return null;
-
-        Account account = user.getAccount();
 
         return new UserDto(
                 user.getId(),
                 user.getFirstName(),
                 user.getMiddleName(),
                 user.getLastName(),
-                account != null ? account.getId() : null,
-                Hibernate.isInitialized(account) ? accountMapper.toDto(account) : null,
+                user.getAccountId(),
                 user.getLicenseType(),
-                user.getCreatedAt(),
-                user.getModifiedAt(),
+                user.getCreatedTime(),
+                user.getModifiedTime(),
                 Hibernate.isInitialized(user.getExperiments())
-                        ? user.getExperiments().stream().map(experimentMapper::toDto).toList() : null
+                        ? user.getExperiments().stream().map(_experimentMapper::toDto).toList() : null
         );
     }
 
     @Override
-    public User toEntity(UserDto dto, Account accountReference) {
+    public User toEntity(UserDto dto) {
         if (dto == null) return null;
 
         return User.builder()
@@ -47,10 +42,10 @@ public class UserMapperImpl implements UserMapper {
                 .firstName(dto.firstName())
                 .middleName(dto.middleName())
                 .lastName(dto.lastName())
-                .account(accountReference)
+                .accountId(dto.accountId())
                 .licenseType(dto.licenseType())
-                .createdAt(dto.createdAt())
-                .modifiedAt(dto.modifiedAt())
+                .createdTime(dto.createdTime())
+                .modifiedTime(dto.modifiedTime())
                 .build();
     }
 }

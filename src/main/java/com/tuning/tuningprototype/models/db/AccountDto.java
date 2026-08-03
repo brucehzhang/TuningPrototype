@@ -1,4 +1,4 @@
-package com.tuning.tuningprototype.models;
+package com.tuning.tuningprototype.models.db;
 
 import java.util.List;
 
@@ -7,6 +7,6 @@ import java.util.List;
 public record AccountDto(
         Long id,
         String name,
-        Long createdAt,
-        Long modifiedAt,
+        Long createdTime,
+        Long modifiedTime,
         List<UserDto> users) {}

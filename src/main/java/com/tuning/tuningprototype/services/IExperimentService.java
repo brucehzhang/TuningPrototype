@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.services;
 
-import com.tuning.tuningprototype.models.ExperimentDto;
+import com.tuning.tuningprototype.models.db.ExperimentDto;
 
 import java.util.Optional;
 

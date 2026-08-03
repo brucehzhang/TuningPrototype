@@ -1,7 +1,10 @@
-package com.tuning.tuningprototype.models;
+package com.tuning.tuningprototype.models.db;
 
+import com.tuning.tuningprototype.models.converters.UnixTimestampConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,31 +26,36 @@ public class Wallet {
     private Long id;
 
     /**
-     * The experiment this wallet belongs to. Lazy.
+     * The id of the experiment this wallet belongs to.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "experiment_id", nullable = false)
-    private Experiment experiment;
+    @Column(name = "experiment_id", nullable = false)
+    private Long experimentId;
 
     /**
      * The current amount of money held in the wallet
      */
+    @Column(name = "current_money_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal currentMoneyAmount;
 
     /**
      * The Unix time of when the wallet was created
      */
+    @Column(name = "created_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long createdTime;
 
     /**
      * The Unix time of when the wallet was last modified
      */
+    @Column(name = "modified_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
     private Long modifiedTime;
 
     /**
      * All purchase lots funded from this wallet. Lazy.
      */
-    @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "walletId", fetch = FetchType.LAZY)
     @Builder.Default
+    @BatchSize(size = 20)
     private List<PurchaseLot> purchaseLots = new ArrayList<>();
 }

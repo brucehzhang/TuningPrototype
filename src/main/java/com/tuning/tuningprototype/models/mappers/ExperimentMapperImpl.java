@@ -1,29 +1,25 @@
 package com.tuning.tuningprototype.models.mappers;
 
-import com.tuning.tuningprototype.models.Experiment;
-import com.tuning.tuningprototype.models.ExperimentDto;
-import com.tuning.tuningprototype.models.User;
-import lombok.RequiredArgsConstructor;
+import com.tuning.tuningprototype.models.db.Experiment;
+import com.tuning.tuningprototype.models.db.ExperimentDto;
 import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class ExperimentMapperImpl implements ExperimentMapper {
 
-    @Lazy
-    private final UserMapper userMapper;
-    @Lazy
-    private final SampleMapper sampleMapper;
-    @Lazy
-    private final WalletMapper walletMapper;
+    private final SampleMapper _sampleMapper;
+    private final WalletMapper _walletMapper;
+
+    public ExperimentMapperImpl(@Lazy SampleMapper sampleMapper, @Lazy WalletMapper walletMapper) {
+        _sampleMapper = sampleMapper;
+        _walletMapper = walletMapper;
+    }
 
     @Override
     public ExperimentDto toDto(Experiment experiment) {
         if (experiment == null) return null;
-
-        User createdByUser = experiment.getCreatedByUser();
 
         return new ExperimentDto(
                 experiment.getId(),
@@ -37,18 +33,17 @@ public class ExperimentMapperImpl implements ExperimentMapper {
                 experiment.getExperimentEndTime(),
                 experiment.getExperimentStatus(),
                 experiment.getCreatedTime(),
-                createdByUser != null ? createdByUser.getId() : null,
-                Hibernate.isInitialized(createdByUser) ? userMapper.toDto(createdByUser) : null,
+                experiment.getCreatedUserId(),
                 experiment.getModifiedTime(),
                 Hibernate.isInitialized(experiment.getSamples())
-                        ? experiment.getSamples().stream().map(sampleMapper::toDto).toList() : null,
+                        ? experiment.getSamples().stream().map(_sampleMapper::toDto).toList() : null,
                 Hibernate.isInitialized(experiment.getWallets())
-                        ? experiment.getWallets().stream().map(walletMapper::toDto).toList() : null
+                        ? experiment.getWallets().stream().map(_walletMapper::toDto).toList() : null
         );
     }
 
     @Override
-    public Experiment toEntity(ExperimentDto dto, User createdByUserReference) {
+    public Experiment toEntity(ExperimentDto dto) {
         if (dto == null) return null;
 
         return Experiment.builder()
@@ -63,7 +58,7 @@ public class ExperimentMapperImpl implements ExperimentMapper {
                 .experimentEndTime(dto.experimentEndTime())
                 .experimentStatus(dto.experimentStatus())
                 .createdTime(dto.createdTime())
-                .createdByUser(createdByUserReference)
+                .createdUserId(dto.createdUserId())
                 .modifiedTime(dto.modifiedTime())
                 .build();
     }
