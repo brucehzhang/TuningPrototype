@@ -2,6 +2,7 @@ package com.tuning.tuningprototype.controllers;
 
 import com.tuning.tuningprototype.models.db.ExperimentDto;
 import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
+import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.services.IExperimentService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,13 @@ public class ExperimentController {
         return ResponseEntity.of(_basicExperimentService.getExperiment(id));
     }
 
+    /**
+     * Creates an experiment in DRAFT state
+     *
+     * @param createExperimentRequest The details for creating the experiment
+     * @param createdUserId The user that created the experiment
+     * @return The DTO for the created experiment, or 500 with the error
+     */
     @PostMapping
     public ResponseEntity<?> createExperiment(@RequestBody CreateExperimentRequest createExperimentRequest,
                                                           @RequestParam long createdUserId) {
@@ -55,6 +63,24 @@ public class ExperimentController {
         } catch (Exception e) {
             // TODO:: Logging
             String message = "Exception occurred creating experiment: " + e.getMessage();
+            System.out.println(message);
+            return ResponseEntity.internalServerError().body(message);
+        }
+    }
+
+    /**
+     * Updates an experiment with the provided body
+     *
+     * @param updateExperimentRequest The request body containing details to update the experiment with
+     * @return The DTO of the updated experiment, or 500 with the error
+     */
+    @PatchMapping
+    public ResponseEntity<?> updateExperiment(@RequestBody UpdateExperimentRequest updateExperimentRequest) {
+        try {
+            return ResponseEntity.ok(_basicExperimentService.updateExperiment(updateExperimentRequest));
+        } catch (Exception e) {
+            // TODO:: Logging
+            String message = "Exception occurred updating experiment: " + e.getMessage();
             System.out.println(message);
             return ResponseEntity.internalServerError().body(message);
         }

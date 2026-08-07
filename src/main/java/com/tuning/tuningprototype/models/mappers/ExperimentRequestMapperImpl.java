@@ -37,7 +37,6 @@ public class ExperimentRequestMapperImpl implements ExperimentRequestMapper {
         if (request.currencyCode() != null) existing.setCurrencyCode(request.currencyCode());
         if (request.experimentStartTime() != null) existing.setExperimentStartTime(request.experimentStartTime());
         if (request.experimentEndTime() != null) existing.setExperimentEndTime(request.experimentEndTime());
-        // experimentStatus deliberately excluded here — handled separately in the service layer
         existing.setModifiedTime(nowEpochSeconds);
     }
 }

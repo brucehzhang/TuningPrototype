@@ -5,6 +5,7 @@ import com.tuning.tuningprototype.models.db.ExperimentDto;
 import com.tuning.tuningprototype.models.mappers.ExperimentMapper;
 import com.tuning.tuningprototype.models.mappers.ExperimentRequestMapper;
 import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
+import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
@@ -65,5 +66,20 @@ public class BasicExperimentService implements IExperimentService {
         Experiment createdExperiment = _experimentRepository.save(_experimentRequestMapper
                 .toEntity(createExperimentRequest, createdUserId, Instant.now().getEpochSecond()));
         return _experimentMapper.toDto(createdExperiment);
+    }
+
+    /**
+     * Updates an experiment while it is in DRAFT state.
+     *
+     * @param updateExperimentRequest Request DTO containing details to update the experiment with
+     * @return The updated experiment as a DTO response
+     */
+    @Override
+    public ExperimentDto updateExperiment(UpdateExperimentRequest updateExperimentRequest) {
+        Experiment experimentToUpdate = _experimentRepository.getReferenceById(updateExperimentRequest.id());
+        _experimentRequestMapper
+                .applyUpdate(updateExperimentRequest, experimentToUpdate, Instant.now().getEpochSecond());
+        Experiment updatedExperiment = _experimentRepository.save(experimentToUpdate);
+        return _experimentMapper.toDto(updatedExperiment);
     }
 }
