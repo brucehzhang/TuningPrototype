@@ -74,14 +74,14 @@ public class Experiment {
     private String currencyCode;
 
     /**
-     * Start of experiment in Unix time
+     * Start of experiment in Unix time, can be in past for backtesting or current/future for scheduled/continous
      */
     @Column(name = "experiment_start_time", nullable = false)
     @Convert(converter = UnixTimestampConverter.class)
     private Long experimentStartTime;
 
     /**
-     * End of experiment in Unix time
+     * End of experiment in Unix time, can be in past for backtesting, can be future for continuous.
      */
     @Column(name = "experiment_end_time", nullable = false)
     @Convert(converter = UnixTimestampConverter.class)

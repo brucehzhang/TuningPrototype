@@ -1,15 +1,14 @@
 package com.tuning.tuningprototype.controllers;
 
 import com.tuning.tuningprototype.models.db.ExperimentDto;
+import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
 import com.tuning.tuningprototype.services.IExperimentService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping(value = "/experiments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,4 +47,16 @@ public class ExperimentController {
         return ResponseEntity.of(_basicExperimentService.getExperiment(id));
     }
 
+    @PostMapping
+    public ResponseEntity<?> createExperiment(@RequestBody CreateExperimentRequest createExperimentRequest,
+                                                          @RequestParam long createdUserId) {
+        try {
+            return ResponseEntity.ok(_basicExperimentService.createExperiment(createExperimentRequest, createdUserId));
+        } catch (Exception e) {
+            // TODO:: Logging
+            String message = "Exception occurred creating experiment: " + e.getMessage();
+            System.out.println(message);
+            return ResponseEntity.internalServerError().body(message);
+        }
+    }
 }
