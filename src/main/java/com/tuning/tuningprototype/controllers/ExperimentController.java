@@ -6,6 +6,7 @@ import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
 import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
+import com.tuning.tuningprototype.models.responses.ErrorResponse;
 import com.tuning.tuningprototype.services.ExperimentService;
 import com.tuning.tuningprototype.services.SampleService;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -46,7 +47,7 @@ public class ExperimentController {
      * Gets an experiment by the id.
      *
      * @param id - id of the experiment
-     * @return ExperimentDto record
+     * @return ExperimentDto record, 404 if not found
      */
     @GetMapping("/{id}")
     public ResponseEntity<ExperimentDto> getExperiment(@PathVariable long id) {
@@ -66,10 +67,8 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_experimentService.createExperiment(createExperimentRequest, createdUserId));
         } catch (Exception e) {
-            // TODO:: Logging
             String message = "Exception occurred creating experiment: " + e.getMessage();
-            System.out.println(message);
-            return ResponseEntity.internalServerError().body(message);
+            return handleException(e, message);
         }
     }
 
@@ -84,10 +83,8 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_experimentService.updateExperiment(updateExperimentRequest));
         } catch (Exception e) {
-            // TODO:: Logging
             String message = "Exception occurred updating experiment: " + e.getMessage();
-            System.out.println(message);
-            return ResponseEntity.internalServerError().body(message);
+            return handleException(e, message);
         }
     }
 
@@ -102,14 +99,12 @@ public class ExperimentController {
     public ResponseEntity<?> createSample(@PathVariable("experimentId") long experimentId, @RequestBody CreateSampleRequest createSampleRequest) {
         try {
             if (experimentId != createSampleRequest.experimentId()) {
-                throw new ExperimentException("Experiment id between path and body do not match.");
+                throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
             return ResponseEntity.ok(_sampleService.createSample(createSampleRequest));
         } catch (Exception e) {
-            // TODO:: Logging
             String message = "Exception occurred for experiment " + experimentId + " creating sample: " + e.getMessage();
-            System.out.println(message);
-            return ResponseEntity.internalServerError().body(message);
+            return handleException(e, message);
         }
     }
 
@@ -126,10 +121,38 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
         } catch (Exception e) {
-            // TODO:: Logging
             String message = "Exception occurred for experiment " + experimentId + " updating sample: " + e.getMessage();
-            System.out.println(message);
-            return ResponseEntity.internalServerError().body(message);
+            return handleException(e, message);
         }
+    }
+
+    /**
+     * Starts the experiment by creating the default wallet if non exist, then determining if this experiment starts with
+     * past or future dated sampling by the experiment start date. If past sampling, directly samples through message broker.
+     * If future sampling, sets up initial CRON job dated for the first future sampling.
+     *
+     * @param experimentId Id of the experiment
+     * @return 200 for successful starts, 500 for server error.
+     */
+    @PostMapping("/{experimentId}/start")
+    public ResponseEntity<?> startExperiment(@PathVariable("experimentId") long experimentId) {
+        try {
+            _experimentService.startExperiment(experimentId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            String message = "Exception occurred starting experiment " + experimentId + ": " + e.getMessage();
+            return handleException(e, message);
+        }
+    }
+
+    // shared exception handling method
+    private ResponseEntity<?> handleException(Exception e, String message) {
+        // TODO:: Logging
+        System.out.println(message);
+        ErrorResponse response = new ErrorResponse(message);
+        if (e instanceof ExperimentException && ((ExperimentException) e).isUserError()) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        return ResponseEntity.internalServerError().body(response);
     }
 }

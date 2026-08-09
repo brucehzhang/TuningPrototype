@@ -81,4 +81,15 @@ public class ExperimentService {
         Experiment updatedExperiment = _experimentRepository.save(experimentToUpdate);
         return _experimentMapper.toDto(updatedExperiment);
     }
+
+    /**
+     * Starts the experiment by creating the default wallet if non exist, then determining if this experiment starts with
+     * past or future dated sampling by the experiment start date. If past sampling, directly samples through message broker.
+     * If future sampling, sets up initial CRON job dated for the first future sampling.
+     *
+     * @param experimentId Id of the experiment
+     */
+    public void startExperiment(long experimentId) {
+        // TODO:: Implement this.
+    }
 }

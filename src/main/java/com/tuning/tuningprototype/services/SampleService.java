@@ -47,7 +47,7 @@ public class SampleService {
     public SampleDto updateSample(UpdateSampleRequest updateSampleRequest, long experimentId) {
         Sample sampleToUpdate = _sampleRepository.getReferenceById(updateSampleRequest.id());
         if (sampleToUpdate.getExperimentId() != experimentId) {
-            throw new ExperimentException("Attempting to update sample that is not part of the requested experiment.");
+            throw new ExperimentException("Attempting to update sample that is not part of the requested experiment.", true);
         }
         _sampleRequestMapper
                 .applyUpdate(updateSampleRequest, sampleToUpdate, Instant.now().getEpochSecond());

@@ -1,8 +1,10 @@
 package com.tuning.tuningprototype.controllers;
 
+import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.requests.NewsDataRequest;
 import com.tuning.tuningprototype.models.requests.StockAggregateDataRequest;
 import com.tuning.tuningprototype.models.requests.StockTradeDataRequest;
+import com.tuning.tuningprototype.models.responses.ErrorResponse;
 import com.tuning.tuningprototype.models.responses.NewsDataResponse;
 import com.tuning.tuningprototype.models.responses.StockAggregateDataResponse;
 import com.tuning.tuningprototype.models.responses.StockTradeDataResponse;
@@ -55,7 +57,7 @@ public class MarketDataController {
                     new StockTradeDataResponse(_alpacaMarketAnalysisService.getStockTradeData(
                             stockTradeDataRequest.tickers(), startTime, endTime), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(String.format("Error getting stock trade data: %s", e.getMessage()));
+            return handleException(e, String.format("Error getting stock trade data: %s", e.getMessage()));
         }
     }
 
@@ -83,7 +85,7 @@ public class MarketDataController {
                             stockAggregateDataRequest.tickers(), stockAggregateDataRequest.timeframe(), startTime, endTime),
                             stockAggregateDataRequest.timeframe(), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(String.format("Error getting stock aggregate data: %s", e.getMessage()));
+            return handleException(e, String.format("Error getting stock aggregate data: %s", e.getMessage()));
         }
     }
 
@@ -110,8 +112,15 @@ public class MarketDataController {
                     new NewsDataResponse(_alpacaMarketAnalysisService.getNewsData(
                             newsDataRequest.tickers(), startTime, endTime), startTime, endTime));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(String.format("Error getting news data: %s", e.getMessage()));
+            return handleException(e, String.format("Error getting news data: %s", e.getMessage()));
         }
     }
 
+    // shared exception handling method
+    private ResponseEntity<?> handleException(Exception e, String message) {
+        // TODO:: Logging
+        System.out.println(message);
+        ErrorResponse response = new ErrorResponse(message);
+        return ResponseEntity.internalServerError().body(response);
+    }
 }
