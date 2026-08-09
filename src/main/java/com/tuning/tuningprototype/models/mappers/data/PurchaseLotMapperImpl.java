@@ -1,4 +1,4 @@
-package com.tuning.tuningprototype.models.mappers;
+package com.tuning.tuningprototype.models.mappers.data;
 
 import com.tuning.tuningprototype.models.db.PurchaseLot;
 import com.tuning.tuningprototype.models.db.PurchaseLotDto;

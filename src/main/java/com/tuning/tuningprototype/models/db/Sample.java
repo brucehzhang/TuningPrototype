@@ -38,7 +38,7 @@ public class Sample {
     private String marketInsights;
 
     /**
-     * The Unix time representing when this sample was taken
+     * The Unix time in seconds representing when this sample was taken
      */
     @Column(name = "sampling_time", nullable = false)
     @Convert(converter = UnixTimestampConverter.class)

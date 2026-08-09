@@ -1,4 +1,4 @@
-package com.tuning.tuningprototype.models.mappers;
+package com.tuning.tuningprototype.models.mappers.request;
 
 import com.tuning.tuningprototype.models.db.Experiment;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
