@@ -6,9 +6,9 @@ import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
 import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
-import com.tuning.tuningprototype.services.IExperimentService;
+import com.tuning.tuningprototype.services.ExperimentService;
+import com.tuning.tuningprototype.services.SampleService;
 import org.springframework.ai.mcp.annotation.McpTool;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +19,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/experiments", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ExperimentController {
 
-    private final IExperimentService _basicExperimentService;
+    private final ExperimentService _experimentService;
+    private final SampleService _sampleService;
 
-    public ExperimentController(
-            @Qualifier("basicExperimentService") IExperimentService basicExperimentService) {
-        _basicExperimentService = basicExperimentService;
+    public ExperimentController(ExperimentService experimentService, SampleService sampleService) {
+        _experimentService = experimentService;
+        _sampleService = sampleService;
     }
 
     /**
@@ -49,7 +50,7 @@ public class ExperimentController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ExperimentDto> getExperiment(@PathVariable long id) {
-        return ResponseEntity.of(_basicExperimentService.getExperiment(id));
+        return ResponseEntity.of(_experimentService.getExperiment(id));
     }
 
     /**
@@ -63,7 +64,7 @@ public class ExperimentController {
     public ResponseEntity<?> createExperiment(@RequestBody CreateExperimentRequest createExperimentRequest,
                                                           @RequestParam long createdUserId) {
         try {
-            return ResponseEntity.ok(_basicExperimentService.createExperiment(createExperimentRequest, createdUserId));
+            return ResponseEntity.ok(_experimentService.createExperiment(createExperimentRequest, createdUserId));
         } catch (Exception e) {
             // TODO:: Logging
             String message = "Exception occurred creating experiment: " + e.getMessage();
@@ -81,7 +82,7 @@ public class ExperimentController {
     @PatchMapping
     public ResponseEntity<?> updateExperiment(@RequestBody UpdateExperimentRequest updateExperimentRequest) {
         try {
-            return ResponseEntity.ok(_basicExperimentService.updateExperiment(updateExperimentRequest));
+            return ResponseEntity.ok(_experimentService.updateExperiment(updateExperimentRequest));
         } catch (Exception e) {
             // TODO:: Logging
             String message = "Exception occurred updating experiment: " + e.getMessage();
@@ -98,13 +99,12 @@ public class ExperimentController {
      * @return The DTO for the created sample, or 500 with the error
      */
     @PostMapping("/{experimentId}/samples")
-    @McpTool(description = "Create a sample containing overall market insights based off the experiment's strategy and retrieved market data associated with the sampling time. Decisions at the specific sampling time will be associated with the sample record.")
     public ResponseEntity<?> createSample(@PathVariable("experimentId") long experimentId, @RequestBody CreateSampleRequest createSampleRequest) {
         try {
             if (experimentId != createSampleRequest.experimentId()) {
                 throw new ExperimentException("Experiment id between path and body do not match.");
             }
-            return ResponseEntity.ok(_basicExperimentService.createSample(createSampleRequest));
+            return ResponseEntity.ok(_sampleService.createSample(createSampleRequest));
         } catch (Exception e) {
             // TODO:: Logging
             String message = "Exception occurred for experiment " + experimentId + " creating sample: " + e.getMessage();
@@ -124,7 +124,7 @@ public class ExperimentController {
     @McpTool(description = "Updates the sample with the market insights and set sample state to DECIDING/COMPLETED/FAILED")
     public ResponseEntity<?> updateSample(@PathVariable("experimentId") long experimentId, @RequestBody UpdateSampleRequest updateSampleRequest) {
         try {
-            return ResponseEntity.ok(_basicExperimentService.updateSample(updateSampleRequest, experimentId));
+            return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
         } catch (Exception e) {
             // TODO:: Logging
             String message = "Exception occurred for experiment " + experimentId + " updating sample: " + e.getMessage();

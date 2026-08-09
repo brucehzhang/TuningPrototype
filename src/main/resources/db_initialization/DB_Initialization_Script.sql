@@ -72,6 +72,7 @@ CREATE TABLE wallets (
                          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                          experiment_id BIGINT UNSIGNED NOT NULL,
                          current_money_amount DECIMAL(19, 4) NOT NULL,
+                         currency_code VARCHAR(3) NOT NULL,
                          created_time DATETIME NOT NULL,
                          modified_time DATETIME NOT NULL,
                          PRIMARY KEY (id),

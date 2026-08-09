@@ -38,6 +38,12 @@ public class Wallet {
     private BigDecimal currentMoneyAmount;
 
     /**
+     * The currency code of the money, defaults to USD.
+     */
+    @Column(name = "currency_code", nullable = false, length = 3)
+    private String currencyCode;
+
+    /**
      * The Unix time of when the wallet was created
      */
     @Column(name = "created_time", nullable = false)

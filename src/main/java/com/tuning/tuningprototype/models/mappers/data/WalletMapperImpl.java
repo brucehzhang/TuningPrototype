@@ -23,6 +23,7 @@ public class WalletMapperImpl implements WalletMapper {
                 wallet.getId(),
                 wallet.getExperimentId(),
                 wallet.getCurrentMoneyAmount(),
+                wallet.getCurrencyCode(),
                 wallet.getCreatedTime(),
                 wallet.getModifiedTime(),
                 Hibernate.isInitialized(wallet.getPurchaseLots())
@@ -38,6 +39,7 @@ public class WalletMapperImpl implements WalletMapper {
                 .id(dto.id())
                 .experimentId(dto.experimentId())
                 .currentMoneyAmount(dto.currentMoneyAmount())
+                .currencyCode(dto.currencyCode())
                 .createdTime(dto.createdTime())
                 .modifiedTime(dto.modifiedTime())
                 .build();

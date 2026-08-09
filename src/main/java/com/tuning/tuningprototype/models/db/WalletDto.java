@@ -8,6 +8,7 @@ public record WalletDto(
         Long id,
         Long experimentId,
         BigDecimal currentMoneyAmount,
+        String currencyCode,
         Long createdTime,
         Long modifiedTime,
         List<PurchaseLotDto> purchaseLots) {}
