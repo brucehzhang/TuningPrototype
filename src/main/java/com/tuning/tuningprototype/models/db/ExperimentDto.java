@@ -13,8 +13,6 @@ public record ExperimentDto(
         AgentModel agentModel,
         String strategyPrompt,
         SamplingWindow samplingWindow,
-        BigDecimal startingMoneyAmount,
-        String currencyCode,
         Long experimentStartTime,
         Long experimentEndTime,
         ExperimentStatus experimentStatus,

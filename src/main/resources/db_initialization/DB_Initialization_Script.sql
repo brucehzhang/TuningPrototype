@@ -42,8 +42,6 @@ CREATE TABLE experiments (
                              agent_model VARCHAR(50) NOT NULL,
                              strategy_prompt VARCHAR(10000) NOT NULL,
                              sampling_window VARCHAR(50) NOT NULL,
-                             starting_money_amount DECIMAL(19, 4) NOT NULL,
-                             currency_code VARCHAR(3) NOT NULL,
                              experiment_start_time DATETIME NOT NULL,
                              experiment_end_time DATETIME NOT NULL,
                              experiment_status VARCHAR(50) NOT NULL,
@@ -58,7 +56,7 @@ CREATE TABLE experiments (
 CREATE TABLE samples (
                          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                          experiment_id BIGINT UNSIGNED NOT NULL,
-                         market_insights VARCHAR(10000) NOT NULL,
+                         market_insights VARCHAR(10000),
                          sampling_time DATETIME NOT NULL,
                          sampling_status VARCHAR(50) NOT NULL,
                          created_time DATETIME NOT NULL,
@@ -71,6 +69,7 @@ CREATE TABLE samples (
 CREATE TABLE wallets (
                          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                          experiment_id BIGINT UNSIGNED NOT NULL,
+                         starting_money_amount DECIMAL(19, 4) NOT NULL,
                          current_money_amount DECIMAL(19, 4) NOT NULL,
                          currency_code VARCHAR(3) NOT NULL,
                          created_time DATETIME NOT NULL,

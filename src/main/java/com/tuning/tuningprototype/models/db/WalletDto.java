@@ -7,6 +7,7 @@ import java.util.List;
 public record WalletDto(
         Long id,
         Long experimentId,
+        BigDecimal startingMoneyAmount,
         BigDecimal currentMoneyAmount,
         String currencyCode,
         Long createdTime,

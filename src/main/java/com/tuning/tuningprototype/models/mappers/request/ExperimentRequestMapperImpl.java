@@ -16,8 +16,6 @@ public class ExperimentRequestMapperImpl implements ExperimentRequestMapper {
                 .agentModel(request.agentModel())
                 .strategyPrompt(request.strategyPrompt())
                 .samplingWindow(request.samplingWindow())
-                .startingMoneyAmount(request.startingMoneyAmount())
-                .currencyCode(request.currencyCode())
                 .experimentStartTime(request.experimentStartTime())
                 .experimentEndTime(request.experimentEndTime())
                 .experimentStatus(ExperimentStatus.DRAFT)      // server-controlled default
@@ -33,8 +31,6 @@ public class ExperimentRequestMapperImpl implements ExperimentRequestMapper {
         if (request.agentModel() != null) existing.setAgentModel(request.agentModel());
         if (request.strategyPrompt() != null) existing.setStrategyPrompt(request.strategyPrompt());
         if (request.samplingWindow() != null) existing.setSamplingWindow(request.samplingWindow());
-        if (request.startingMoneyAmount() != null) existing.setStartingMoneyAmount(request.startingMoneyAmount());
-        if (request.currencyCode() != null) existing.setCurrencyCode(request.currencyCode());
         if (request.experimentStartTime() != null) existing.setExperimentStartTime(request.experimentStartTime());
         if (request.experimentEndTime() != null) existing.setExperimentEndTime(request.experimentEndTime());
         existing.setModifiedTime(nowEpochSeconds);

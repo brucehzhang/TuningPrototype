@@ -2,14 +2,13 @@ package com.tuning.tuningprototype.controllers;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.db.ExperimentDto;
-import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
-import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
-import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
-import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
+import com.tuning.tuningprototype.models.requests.*;
 import com.tuning.tuningprototype.models.responses.ErrorResponse;
 import com.tuning.tuningprototype.services.ExperimentService;
 import com.tuning.tuningprototype.services.SampleService;
+import com.tuning.tuningprototype.services.WalletService;
 import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +21,12 @@ public class ExperimentController {
 
     private final ExperimentService _experimentService;
     private final SampleService _sampleService;
+    private final WalletService _walletService;
 
-    public ExperimentController(ExperimentService experimentService, SampleService sampleService) {
+    public ExperimentController(ExperimentService experimentService, SampleService sampleService, WalletService walletService) {
         _experimentService = experimentService;
         _sampleService = sampleService;
+        _walletService = walletService;
     }
 
     /**
@@ -112,12 +113,18 @@ public class ExperimentController {
      * Updates an sample with the provided body, used for storing analyzed market data into market insights and modifying the state of the sample.
      *
      * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
-     * @param updateSampleRequest The request body containing details to update the experiment with
+     * @param updateSampleRequest The request body containing details to update the sample with
      * @return The DTO of the updated sample, or 500 with the error
      */
     @PatchMapping("/{experimentId}/samples")
-    @McpTool(description = "Updates the sample with the market insights and set sample state to DECIDING/COMPLETED/FAILED")
-    public ResponseEntity<?> updateSample(@PathVariable("experimentId") long experimentId, @RequestBody UpdateSampleRequest updateSampleRequest) {
+    @McpTool(description = "Updates the sample with the market insights and sets sample state to DECIDING/COMPLETED/FAILED")
+    public ResponseEntity<?> updateSample(
+            @McpToolParam(description = "The id of the experiment that the sample belongs to.")
+            @PathVariable("experimentId") long experimentId,
+            @McpToolParam(description = "The request body containing details to update the experiment with. " +
+                    "Market insights will be updated with by the agent after its tool calls for market data have been summarized, at which the state will be set to DECIDING. " +
+                    "The status will be updated to complete after all trade decisions have been COMPLETED, or FAILED if anything goes wrong.")
+            @RequestBody UpdateSampleRequest updateSampleRequest) {
         try {
             return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
         } catch (Exception e) {
@@ -127,20 +134,58 @@ public class ExperimentController {
     }
 
     /**
-     * Starts the experiment by creating the default wallet if non exist, then determining if this experiment starts with
-     * past or future dated sampling by the experiment start date. If past sampling, directly samples through message broker.
-     * If future sampling, sets up initial CRON job dated for the first future sampling.
+     * Starts the experiment if it is in DRAFT state. The experiment start time will drive if the sampling.
+     * If it is in the past, then immediate sampling using historic market data will be done.
+     * If it is in the future, then scheduled sampling will be done.
      *
      * @param experimentId Id of the experiment
-     * @return 200 for successful starts, 500 for server error.
+     * @return The DTO of the started experiment, 500 for server error.
      */
-    @PostMapping("/{experimentId}/start")
-    public ResponseEntity<?> startExperiment(@PathVariable("experimentId") long experimentId) {
+    @PostMapping("/{experimentId}/run")
+    public ResponseEntity<?> runExperiment(@PathVariable("experimentId") long experimentId) {
         try {
-            _experimentService.startExperiment(experimentId);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(_experimentService.runExperiment(experimentId));
         } catch (Exception e) {
-            String message = "Exception occurred starting experiment " + experimentId + ": " + e.getMessage();
+            String message = "Exception occurred running experiment " + experimentId + ": " + e.getMessage();
+            return handleException(e, message);
+        }
+    }
+
+    /**
+     * Creates a Wallet containing starting money amount and currency associated to an experiment.
+     *
+     * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
+     * @param createWalletRequest The details for creating the wallet
+     * @return The DTO for the created wallet, or 500 with the error
+     */
+    @PostMapping("/{experimentId}/wallets")
+    public ResponseEntity<?> createSample(@PathVariable("experimentId") long experimentId, @RequestBody CreateWalletRequest createWalletRequest) {
+        try {
+            if (experimentId != createWalletRequest.experimentId()) {
+                throw new ExperimentException("Experiment id between path and body do not match.", true);
+            }
+            return ResponseEntity.ok(_walletService.createWallet(createWalletRequest));
+        } catch (Exception e) {
+            String message = "Exception occurred for experiment " + experimentId + " creating wallet: " + e.getMessage();
+            return handleException(e, message);
+        }
+    }
+
+    /**
+     * Updates a wallet with the provided body containing changes to the starting amount and/or currency.
+     *
+     * @param experimentId The id of the experiment that the wallet will belong to, used for validation and REST pathing.
+     * @param updateWalletRequest The request body containing details to update the wallet with
+     * @return The DTO of the updated sample, or 500 with the error
+     */
+    @PatchMapping("/{experimentId}/wallets")
+    public ResponseEntity<?> updateWallet(
+            @PathVariable("experimentId") long experimentId,
+            @RequestBody UpdateWalletRequest updateWalletRequest) {
+        try {
+            return ResponseEntity.ok(_walletService.updateStartingWallet(updateWalletRequest, experimentId));
+        } catch (Exception e) {
+            String message = "Exception occurred for experiment " + experimentId + " updating wallet: " + e.getMessage();
             return handleException(e, message);
         }
     }

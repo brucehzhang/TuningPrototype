@@ -42,7 +42,6 @@ INSERT INTO users (id, first_name, middle_name, last_name, account_id, license_t
 -- ============================================================================
 INSERT INTO experiments (
     id, name, agent_model, strategy_prompt, sampling_window,
-    starting_money_amount, currency_code,
     experiment_start_time, experiment_end_time, experiment_status,
     created_time, created_user_id, modified_time
 ) VALUES
@@ -50,7 +49,6 @@ INSERT INTO experiments (
        'CLAUDE_OPUS_4_7',
        'You are a stock trader with a focus on the technology sector. You typically trade based off of long-term growth and R&D investment from earnings reports, but make judgments for holding, selling, or buying in through sentiment in current events.',
        'DAYS_1',
-       100000.0000, 'USD',
        '2025-01-01 00:00:00', '2025-06-30 00:00:00', 'COMPLETED',
        '2026-01-01 10:00:00', 1, '2026-01-01 10:00:00'),
 
@@ -58,7 +56,6 @@ INSERT INTO experiments (
        'CLAUDE_SONNET_4_6',
        'You are a value-oriented trader focused on the energy sector. Prioritize undervalued companies with strong free cash flow and be conservative with position sizing.',
        'HOURS_4',
-       50000.0000, 'USD',
        '2025-02-01 00:00:00', '2025-08-01 00:00:00', 'IN_PROGRESS',
        '2026-01-02 11:00:00', 2, '2026-01-02 11:00:00'),
 
@@ -66,7 +63,6 @@ INSERT INTO experiments (
        'CLAUDE_HAIKU_4_5',
        'You are a short-term trader reacting to breaking news sentiment. Favor small, frequent trades over long holds.',
        'MINUTES_30',
-       10000.0000, 'USD',
        '2025-03-01 00:00:00', '2025-03-15 00:00:00', 'DRAFT',
        '2026-01-05 09:30:00', 3, '2026-01-05 09:30:00');
 
@@ -84,10 +80,10 @@ INSERT INTO samples (id, experiment_id, market_insights, sampling_time, sampling
 -- ============================================================================
 -- WALLETS
 -- ============================================================================
-INSERT INTO wallets (id, experiment_id, current_money_amount, currency_code, created_time, modified_time) VALUES
-                                                                                               (1, 1, 87500.5000, 'USD','2026-01-01 10:05:00', '2026-01-01 10:20:00'),
-                                                                                               (2, 2, 51250.0000, 'USD','2026-01-02 11:05:00', '2026-01-02 11:15:00'),
-                                                                                               (3, 3, 10000.0000, 'USD','2026-01-05 09:30:00', '2026-01-05 09:30:00');
+INSERT INTO wallets (id, experiment_id, starting_money_amount, current_money_amount, currency_code, created_time, modified_time) VALUES
+                                                                                               (1, 1, 87500.5000, 87500.5000, 'USD','2026-01-01 10:05:00', '2026-01-01 10:20:00'),
+                                                                                               (2, 2, 51250.0000, 51250.0000, 'USD','2026-01-02 11:05:00', '2026-01-02 11:15:00'),
+                                                                                               (3, 3, 10000.0000, 10000.0000, 'USD','2026-01-05 09:30:00', '2026-01-05 09:30:00');
 
 -- ============================================================================
 -- DECISIONS

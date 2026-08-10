@@ -1,6 +1,5 @@
 package com.tuning.tuningprototype.controllers;
 
-import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.requests.NewsDataRequest;
 import com.tuning.tuningprototype.models.requests.StockAggregateDataRequest;
 import com.tuning.tuningprototype.models.requests.StockTradeDataRequest;
@@ -70,7 +69,8 @@ public class MarketDataController {
     @PostMapping("/stocks/aggregates")
     @McpTool(description = "Fetches stock price details aggregated by a provided timeframe for the requested stock tickers that have occurred between the start and end time window.")
     public ResponseEntity<?> fetchStockAggregateData(
-            @McpToolParam(description = "Structured object containing list of tickers (ex. GOOG, AAPL), timeframe for each aggregated stock price detail (Ex: [1-59]Min, [1-24]Hour, 1Day, 1Week, [1,2,3,4,6,12]Month), start time in unix time, and end time in unix time")
+            @McpToolParam(description = "Structured object containing list of tickers (ex. GOOG, AAPL), timeframe for each aggregated stock price detail " +
+                    "(Ex: [1-59]Min, [1-24]Hour, 1Day, 1Week, [1,2,3,4,6,12]Month), start time in unix time, and end time in unix time")
             @RequestBody StockAggregateDataRequest stockAggregateDataRequest) {
         try {
             // TODO:: More validations, probably shared helper method

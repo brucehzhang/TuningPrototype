@@ -62,18 +62,6 @@ public class Experiment {
     private SamplingWindow samplingWindow;
 
     /**
-     * The amount of money that the experiment should start its backtest with
-     */
-    @Column(name = "starting_money_amount", nullable = false, precision = 19, scale = 4)
-    private BigDecimal startingMoneyAmount;
-
-    /**
-     * The currency code of the money, defaults to USD.
-     */
-    @Column(name = "currency_code", nullable = false, length = 3)
-    private String currencyCode;
-
-    /**
      * Start of experiment in Unix time, can be in past for backtesting or current/future for scheduled/continous
      */
     @Column(name = "experiment_start_time", nullable = false)

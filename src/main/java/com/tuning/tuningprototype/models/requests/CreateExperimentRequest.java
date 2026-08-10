@@ -11,7 +11,5 @@ public record CreateExperimentRequest(
         AgentModel agentModel,
         String strategyPrompt,
         SamplingWindow samplingWindow,
-        BigDecimal startingMoneyAmount,
-        String currencyCode,
         Long experimentStartTime,
         Long experimentEndTime) {}

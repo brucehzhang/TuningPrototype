@@ -27,8 +27,6 @@ public class ExperimentMapperImpl implements ExperimentMapper {
                 experiment.getAgentModel(),
                 experiment.getStrategyPrompt(),
                 experiment.getSamplingWindow(),
-                experiment.getStartingMoneyAmount(),
-                experiment.getCurrencyCode(),
                 experiment.getExperimentStartTime(),
                 experiment.getExperimentEndTime(),
                 experiment.getExperimentStatus(),
@@ -52,8 +50,6 @@ public class ExperimentMapperImpl implements ExperimentMapper {
                 .agentModel(dto.agentModel())
                 .strategyPrompt(dto.strategyPrompt())
                 .samplingWindow(dto.samplingWindow())
-                .startingMoneyAmount(dto.startingMoneyAmount())
-                .currencyCode(dto.currencyCode())
                 .experimentStartTime(dto.experimentStartTime())
                 .experimentEndTime(dto.experimentEndTime())
                 .experimentStatus(dto.experimentStatus())

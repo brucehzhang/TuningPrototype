@@ -32,6 +32,12 @@ public class Wallet {
     private Long experimentId;
 
     /**
+     * The starting amount of money held in the wallet
+     */
+    @Column(name = "starting_money_amount", nullable = false, precision = 19, scale = 4)
+    private BigDecimal startingMoneyAmount;
+
+    /**
      * The current amount of money held in the wallet
      */
     @Column(name = "current_money_amount", nullable = false, precision = 19, scale = 4)

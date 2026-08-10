@@ -34,7 +34,7 @@ public class Sample {
     /**
      * The market data/news/insights gathered at this sampling point, provided to the agent for decision making
      */
-    @Column(name = "market_insights", nullable = false, length = 10000)
+    @Column(name = "market_insights", length = 10000)
     private String marketInsights;
 
     /**
