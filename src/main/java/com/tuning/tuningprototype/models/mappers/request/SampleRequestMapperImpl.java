@@ -1,9 +1,9 @@
 package com.tuning.tuningprototype.models.mappers.request;
 
-import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
 import com.tuning.tuningprototype.models.db.Sample;
-import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
 import com.tuning.tuningprototype.models.enums.SamplingStatus;
+import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
+import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
 import org.springframework.stereotype.Component;
 
 @Component

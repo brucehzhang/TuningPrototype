@@ -5,7 +5,6 @@ import com.tuning.tuningprototype.messaging.SampleScheduler;
 import com.tuning.tuningprototype.messaging.SamplingQueuePublisher;
 import com.tuning.tuningprototype.models.db.Experiment;
 import com.tuning.tuningprototype.models.db.ExperimentDto;
-import com.tuning.tuningprototype.models.db.WalletDto;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.mappers.data.ExperimentMapper;
 import com.tuning.tuningprototype.models.mappers.request.ExperimentRequestMapper;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Service

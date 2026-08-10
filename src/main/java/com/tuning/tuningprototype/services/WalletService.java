@@ -1,12 +1,13 @@
 package com.tuning.tuningprototype.services;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
-import com.tuning.tuningprototype.models.db.*;
+import com.tuning.tuningprototype.models.db.Experiment;
+import com.tuning.tuningprototype.models.db.Wallet;
+import com.tuning.tuningprototype.models.db.WalletDto;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.mappers.data.WalletMapper;
 import com.tuning.tuningprototype.models.mappers.request.WalletRequestMapper;
 import com.tuning.tuningprototype.models.requests.CreateWalletRequest;
-import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
 import com.tuning.tuningprototype.models.requests.UpdateWalletRequest;
 import com.tuning.tuningprototype.repositories.WalletRepository;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class WalletService {
