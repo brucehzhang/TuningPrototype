@@ -4,6 +4,7 @@ import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.db.ExperimentDto;
 import com.tuning.tuningprototype.models.requests.*;
 import com.tuning.tuningprototype.models.responses.ErrorResponse;
+import com.tuning.tuningprototype.services.ExperimentProcessorService;
 import com.tuning.tuningprototype.services.ExperimentService;
 import com.tuning.tuningprototype.services.SampleService;
 import com.tuning.tuningprototype.services.WalletService;
@@ -20,11 +21,13 @@ import org.springframework.web.bind.annotation.*;
 public class ExperimentController {
 
     private final ExperimentService _experimentService;
+    private final ExperimentProcessorService _experimentProcessorService;
     private final SampleService _sampleService;
     private final WalletService _walletService;
 
-    public ExperimentController(ExperimentService experimentService, SampleService sampleService, WalletService walletService) {
+    public ExperimentController(ExperimentService experimentService, ExperimentProcessorService experimentProcessorService, SampleService sampleService, WalletService walletService) {
         _experimentService = experimentService;
+        _experimentProcessorService = experimentProcessorService;
         _sampleService = sampleService;
         _walletService = walletService;
     }
@@ -92,7 +95,8 @@ public class ExperimentController {
     }
 
     /**
-     * Creates a Sample in IN_PROGRESS state.
+     * Creates a Sample in IN_PROGRESS state. Used for manual triggering of sample creation in the event of issues in the
+     * experiment loop. This is NOT recommended for direct use.
      *
      * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
      * @param createSampleRequest The details for creating the sample
@@ -104,7 +108,7 @@ public class ExperimentController {
             if (experimentId != createSampleRequest.experimentId()) {
                 throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
-            return ResponseEntity.ok(_sampleService.createSample(createSampleRequest));
+            return ResponseEntity.ok(_experimentProcessorService.startSampling(createSampleRequest));
         } catch (Exception e) {
             String message = "Exception occurred for experiment " + experimentId + " creating sample: " + e.getMessage();
             return handleException(e, message);
@@ -146,7 +150,7 @@ public class ExperimentController {
     @PostMapping("/{experimentId}/run")
     public ResponseEntity<?> runExperiment(@PathVariable("experimentId") long experimentId) {
         try {
-            return ResponseEntity.ok(_experimentService.runExperiment(experimentId));
+            return ResponseEntity.ok(_experimentProcessorService.runExperiment(experimentId));
         } catch (Exception e) {
             String message = "Exception occurred running experiment " + experimentId + ": " + e.getMessage();
             return handleException(e, message);

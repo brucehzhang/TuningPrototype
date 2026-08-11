@@ -1,15 +1,12 @@
 package com.tuning.tuningprototype.services;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
-import com.tuning.tuningprototype.messaging.SampleScheduler;
-import com.tuning.tuningprototype.messaging.SamplingQueuePublisher;
 import com.tuning.tuningprototype.models.db.Experiment;
 import com.tuning.tuningprototype.models.db.ExperimentDto;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.mappers.data.ExperimentMapper;
 import com.tuning.tuningprototype.models.mappers.request.ExperimentRequestMapper;
 import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
-import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
 import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import org.hibernate.Hibernate;
@@ -25,20 +22,15 @@ public class ExperimentService {
     private final ExperimentRepository _experimentRepository;
     private final ExperimentMapper _experimentMapper;
     private final ExperimentRequestMapper _experimentRequestMapper;
-    private final SamplingQueuePublisher _samplingQueuePublisher;
-    private final SampleScheduler _sampleScheduler;
     private final WalletService _walletService;
 
     public ExperimentService(ExperimentRepository experimentRepository,
                              ExperimentMapper experimentMapper,
                              ExperimentRequestMapper experimentRequestMapper,
-                             SamplingQueuePublisher samplingQueuePublisher,
-                             SampleScheduler sampleScheduler, WalletService walletService) {
+                             WalletService walletService) {
         _experimentRepository = experimentRepository;
         _experimentMapper = experimentMapper;
         _experimentRequestMapper = experimentRequestMapper;
-        _samplingQueuePublisher = samplingQueuePublisher;
-        _sampleScheduler = sampleScheduler;
         _walletService = walletService;
     }
 
@@ -106,33 +98,6 @@ public class ExperimentService {
         if (updateExperimentRequest.experimentStartTime() != null) {
             _walletService.updateStartingWalletOpenDates(
                     updateExperimentRequest.id(), updateExperimentRequest.experimentStartTime());
-        }
-        return _experimentMapper.toDto(updatedExperiment);
-    }
-
-    /**
-     * Starts the experiment by determining if this experiment starts in the past or future.
-     * If past sampling, directly samples through message broker.
-     * If future sampling, sets up the initial one-off scheduled job dated at the future start date.
-     *
-     * @param experimentId Id of the experiment
-     */
-    @Transactional
-    public ExperimentDto runExperiment(long experimentId) {
-        Experiment experiment = _experimentRepository.findWithWalletsById(experimentId)
-                .orElseThrow(() -> new ExperimentException("Experiment " + experimentId + " could not be found.", true));
-        if (experiment.getExperimentStatus() != ExperimentStatus.DRAFT) {
-            throw new ExperimentException("Experiment " + experimentId + " is not in DRAFT state and cannot be started.", true);
-        }
-        // Creates the default wallet with 100000 starting amount and currency if it doesn't exist.
-        _walletService.createDefaultWallet(experimentId, experiment.getExperimentStartTime());
-        // Update experiment to IN_PROGRESS
-        experiment.setExperimentStatus(ExperimentStatus.IN_PROGRESS);
-        Experiment updatedExperiment = _experimentRepository.save(experiment);
-        if (experiment.getExperimentStartTime() < Instant.now().getEpochSecond()) {
-            _samplingQueuePublisher.sendMessage(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
-        } else {
-            _sampleScheduler.scheduleSampleRun(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         }
         return _experimentMapper.toDto(updatedExperiment);
     }
