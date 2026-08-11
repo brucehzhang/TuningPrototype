@@ -4,6 +4,7 @@ import com.tuning.tuningprototype.models.db.PurchaseLot;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,11 @@ public interface PurchaseLotRepository extends JpaRepository<PurchaseLot, Long> 
      * All purchase lots for a given wallet, via the plain FK column.
      */
     List<PurchaseLot> findByWalletId(Long walletId);
+
+    /**
+     * Non-nested lookup for purchase lots by wallet ids and purchase time less than equal
+     */
+    List<PurchaseLot> findByWalletIdInAndPurchaseTimeIsLessThanEqual(Collection<Long> walletIds, Long purchaseTimeIsLessThan);
 
     /**
      * All purchase lots resulting from a given decision, via the plain FK column.

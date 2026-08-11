@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "wallets")
-// Wallet tracks the current money balance for an experiment throughout its backtest
+// Wallet tracks the overall purchases and sales for a specific currency in an experiment throughout its backtest. One per currency, can be opened mid-experiment through forex exchange.
 public class Wallet {
     /**
      * Id of the wallet
@@ -38,10 +38,11 @@ public class Wallet {
     private BigDecimal startingMoneyAmount;
 
     /**
-     * The current amount of money held in the wallet
+     * The Unix time representing when this wallet was opened. Defaults to the start time of the experiment, but can be opened mid-experiment if foreign currency is purchased..
      */
-    @Column(name = "current_money_amount", nullable = false, precision = 19, scale = 4)
-    private BigDecimal currentMoneyAmount;
+    @Column(name = "opened_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
+    private Long openedTime;
 
     /**
      * The currency code of the money, defaults to USD.

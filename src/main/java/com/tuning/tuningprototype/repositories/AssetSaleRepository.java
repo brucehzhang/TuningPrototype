@@ -3,6 +3,7 @@ package com.tuning.tuningprototype.repositories;
 import com.tuning.tuningprototype.models.db.AssetSale;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,11 @@ public interface AssetSaleRepository extends JpaRepository<AssetSale, Long> {
      * useful for computing how much of a lot has been sold off.
      */
     List<AssetSale> findByPurchaseLotId(Long purchaseLotId);
+
+    /**
+     * Non-nested lookup for asset sales by purchase lot ids and sale time less than equal
+     */
+    List<AssetSale> findByPurchaseLotIdInAndSaleTimeIsLessThanEqual(Collection<Long> purchaseLotIds, Long saleTimeIsLessThan);
 
     /**
      * All asset sales resulting from a given decision, via the plain FK column.

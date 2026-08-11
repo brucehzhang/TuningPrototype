@@ -18,6 +18,7 @@ public class AssetSaleMapperImpl implements AssetSaleMapper {
                 assetSale.getTicker(),
                 assetSale.getSalePrice(),
                 assetSale.getSaleAmount(),
+                assetSale.getSaleTime(),
                 assetSale.getCreatedTime(),
                 assetSale.getModifiedTime()
         );
@@ -34,6 +35,7 @@ public class AssetSaleMapperImpl implements AssetSaleMapper {
                 .ticker(dto.ticker())
                 .salePrice(dto.salePrice())
                 .saleAmount(dto.saleAmount())
+                .saleTime(dto.saleTime())
                 .createdTime(dto.createdTime())
                 .modifiedTime(dto.modifiedTime())
                 .build();

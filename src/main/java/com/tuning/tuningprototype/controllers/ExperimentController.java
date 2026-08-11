@@ -48,11 +48,13 @@ public class ExperimentController {
      * Gets an experiment by the id.
      *
      * @param id - id of the experiment
+     * @param shouldDecorate - Boolean flag toggling whether we do additional querying for nested data.
      * @return ExperimentDto record, 404 if not found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ExperimentDto> getExperiment(@PathVariable long id) {
-        return ResponseEntity.of(_experimentService.getExperiment(id));
+    public ResponseEntity<ExperimentDto> getExperiment(@PathVariable long id,
+                                                       @RequestParam(value = "shouldDecorate", defaultValue = "true") boolean shouldDecorate) {
+        return ResponseEntity.of(_experimentService.getExperiment(id, shouldDecorate));
     }
 
     /**
@@ -110,7 +112,7 @@ public class ExperimentController {
     }
 
     /**
-     * Updates an sample with the provided body, used for storing analyzed market data into market insights and modifying the state of the sample.
+     * Updates a sample with the provided body, used for storing analyzed market data into market insights and modifying the state of the sample.
      *
      * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
      * @param updateSampleRequest The request body containing details to update the sample with
@@ -154,19 +156,47 @@ public class ExperimentController {
     /**
      * Creates a Wallet containing starting money amount and currency associated to an experiment.
      *
-     * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
+     * @param experimentId The id of the experiment that the wallet will belong to, used for validation and REST pathing.
      * @param createWalletRequest The details for creating the wallet
      * @return The DTO for the created wallet, or 500 with the error
      */
     @PostMapping("/{experimentId}/wallets")
-    public ResponseEntity<?> createSample(@PathVariable("experimentId") long experimentId, @RequestBody CreateWalletRequest createWalletRequest) {
+    public ResponseEntity<?> createWallet(@PathVariable("experimentId") long experimentId,
+                                          @RequestBody CreateWalletRequest createWalletRequest) {
         try {
             if (experimentId != createWalletRequest.experimentId()) {
                 throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
-            return ResponseEntity.ok(_walletService.createWallet(createWalletRequest));
+            ExperimentDto experimentDto = _experimentService.getExperiment(experimentId, false)
+                    .orElseThrow(() -> new ExperimentException("No experiment found for the provided id " + experimentId, true));
+            return ResponseEntity.ok(_walletService.createWallet(createWalletRequest, experimentDto));
         } catch (Exception e) {
             String message = "Exception occurred for experiment " + experimentId + " creating wallet: " + e.getMessage();
+            return handleException(e, message);
+
+        }
+    }
+
+    /**
+     * Fetches all the wallets for an experiment along with purchase and sales decisions at the provided checkTime
+     * in epoch seconds. Defaults to now if no time provided.
+     *
+     * @param experimentId The id of the experiment that we are fetching the wallets from.
+     * @param checkTime The point-in-time in epoch seconds that we are checking against.
+     * @return List of Wallet DTOs with the associated purchases and sales at the point in time.
+     */
+    @GetMapping("/{experimentId}/wallets")
+    @McpTool(description = "Fetches all the wallets for an experiment along with purchase and sales decisions " +
+            "at the provided checkTime in epoch seconds. Defaults to now if no time provided.")
+    public ResponseEntity<?> getExperimentWallets(
+            @McpToolParam(description = "The id of the experiment that we are fetching the wallets from.")
+            @PathVariable("experimentId") long experimentId,
+            @McpToolParam(description = "The point-in-time in epoch seconds that we are checking against.")
+            @RequestParam(required = false) Long checkTime) {
+        try {
+            return ResponseEntity.ok(_walletService.getWalletsByExperiment(experimentId, checkTime));
+        } catch (Exception e) {
+            String message = "Exception occurred for experiment " + experimentId + " getting finances: " + e.getMessage();
             return handleException(e, message);
         }
     }

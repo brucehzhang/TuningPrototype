@@ -11,7 +11,6 @@ public interface ExperimentRepository extends JpaRepository<Experiment, Long> {
 
     /**
      * Plain lookup — samples and wallets collections stay uninitialized.
-     * No parent association to fetch since @ManyToOne to User was removed.
      */
     Optional<Experiment> findById(Long id);
 

@@ -26,6 +26,7 @@ public class PurchaseLotMapperImpl implements PurchaseLotMapper {
                 purchaseLot.getTicker(),
                 purchaseLot.getPurchasePrice(),
                 purchaseLot.getPurchaseAmount(),
+                purchaseLot.getPurchaseTime(),
                 purchaseLot.getCreatedTime(),
                 purchaseLot.getModifiedTime(),
                 Hibernate.isInitialized(purchaseLot.getAssetSales())
@@ -44,6 +45,7 @@ public class PurchaseLotMapperImpl implements PurchaseLotMapper {
                 .ticker(dto.ticker())
                 .purchasePrice(dto.purchasePrice())
                 .purchaseAmount(dto.purchaseAmount())
+                .purchaseTime(dto.purchaseTime())
                 .createdTime(dto.createdTime())
                 .modifiedTime(dto.modifiedTime())
                 .build();

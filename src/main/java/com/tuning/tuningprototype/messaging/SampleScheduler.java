@@ -30,7 +30,8 @@ public class SampleScheduler {
                         .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
         // Set target to SNS queue for scheduler
-        // TODO:: Move these to KMS
+        // For local dev, this is currently mocked by LocalStack.
+        // TODO:: Move these to KMS.
         Target target = Target.builder()
                 .arn("arn:aws:sqs:us-east-1:000000000000:sampling_scheduler_queue")
                 .roleArn("arn:aws:iam::000000000000:role/EventBridgeSchedulerExecutionRole")

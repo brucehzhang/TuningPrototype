@@ -8,7 +8,7 @@ public record WalletDto(
         Long id,
         Long experimentId,
         BigDecimal startingMoneyAmount,
-        BigDecimal currentMoneyAmount,
+        Long openedTime,
         String currencyCode,
         Long createdTime,
         Long modifiedTime,

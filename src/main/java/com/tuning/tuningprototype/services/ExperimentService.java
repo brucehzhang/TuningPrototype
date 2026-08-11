@@ -31,7 +31,9 @@ public class ExperimentService {
 
     public ExperimentService(ExperimentRepository experimentRepository,
                              ExperimentMapper experimentMapper,
-                             ExperimentRequestMapper experimentRequestMapper, SamplingQueuePublisher samplingQueuePublisher, SampleScheduler sampleScheduler, WalletService walletService) {
+                             ExperimentRequestMapper experimentRequestMapper,
+                             SamplingQueuePublisher samplingQueuePublisher,
+                             SampleScheduler sampleScheduler, WalletService walletService) {
         _experimentRepository = experimentRepository;
         _experimentMapper = experimentMapper;
         _experimentRequestMapper = experimentRequestMapper;
@@ -42,14 +44,19 @@ public class ExperimentService {
 
     /**
      * Gets the experiment and nested data by the experiment id.
+     *
      * @param id The id of the experiment
+     * @param shouldDecorate Whether this method should fully hydrate the experiment with its nested data or not.
      * @return Optional of the experiment as a response DTO
      */
-    public Optional<ExperimentDto> getExperiment(long id) {
-        // Using wallet query, but lazy loading samples with hibernate through @BatchSize
-        return _experimentRepository.findWithWalletsById(id)
-                .map(this::loadFullyHydratedExperiment)
-                .map(_experimentMapper::toDto);
+    public Optional<ExperimentDto> getExperiment(long id, boolean shouldDecorate) {
+        if (shouldDecorate) {
+            // Using wallet query, but lazy loading samples with hibernate through @BatchSize
+            return _experimentRepository.findWithWalletsById(id)
+                    .map(this::loadFullyHydratedExperiment)
+                    .map(_experimentMapper::toDto);
+        }
+        return _experimentRepository.findById(id).map(_experimentMapper::toDto);
     }
 
     // Used for completely hydrating an experiment on gets and create
@@ -87,6 +94,7 @@ public class ExperimentService {
      * @param updateExperimentRequest Request DTO containing details to update the experiment with
      * @return The updated experiment as a DTO response
      */
+    @Transactional
     public ExperimentDto updateExperiment(UpdateExperimentRequest updateExperimentRequest) {
         Experiment experimentToUpdate = _experimentRepository.getReferenceById(updateExperimentRequest.id());
         if (experimentToUpdate.getExperimentStatus() != ExperimentStatus.DRAFT) {
@@ -95,6 +103,10 @@ public class ExperimentService {
         _experimentRequestMapper
                 .applyUpdate(updateExperimentRequest, experimentToUpdate, Instant.now().getEpochSecond());
         Experiment updatedExperiment = _experimentRepository.save(experimentToUpdate);
+        if (updateExperimentRequest.experimentStartTime() != null) {
+            _walletService.updateStartingWalletOpenDates(
+                    updateExperimentRequest.id(), updateExperimentRequest.experimentStartTime());
+        }
         return _experimentMapper.toDto(updatedExperiment);
     }
 
@@ -107,12 +119,13 @@ public class ExperimentService {
      */
     @Transactional
     public ExperimentDto runExperiment(long experimentId) {
-        Experiment experiment = _experimentRepository.getReferenceById(experimentId);
+        Experiment experiment = _experimentRepository.findWithWalletsById(experimentId)
+                .orElseThrow(() -> new ExperimentException("Experiment " + experimentId + " could not be found.", true));
         if (experiment.getExperimentStatus() != ExperimentStatus.DRAFT) {
-            throw new ExperimentException("Experiment " + experimentId + " is not in DRAFT state and cannot be started.", false);
+            throw new ExperimentException("Experiment " + experimentId + " is not in DRAFT state and cannot be started.", true);
         }
         // Creates the default wallet with 100000 starting amount and currency if it doesn't exist.
-        _walletService.createDefaultWallet(experiment);
+        _walletService.createDefaultWallet(experimentId, experiment.getExperimentStartTime());
         // Update experiment to IN_PROGRESS
         experiment.setExperimentStatus(ExperimentStatus.IN_PROGRESS);
         Experiment updatedExperiment = _experimentRepository.save(experiment);

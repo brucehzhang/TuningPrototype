@@ -56,6 +56,13 @@ public class PurchaseLot {
     private BigDecimal purchaseAmount;
 
     /**
+     * The Unix time representing when this purchase was made
+     */
+    @Column(name = "purchase_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
+    private Long purchaseTime;
+
+    /**
      * The Unix time of when the purchase lot was created
      */
     @Column(name = "created_time", nullable = false)

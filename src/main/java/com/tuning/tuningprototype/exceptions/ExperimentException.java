@@ -1,5 +1,8 @@
 package com.tuning.tuningprototype.exceptions;
 
+import lombok.Getter;
+
+@Getter
 public class ExperimentException extends RuntimeException {
 
     private final boolean isUserError;
@@ -9,7 +12,4 @@ public class ExperimentException extends RuntimeException {
         super(message);
     }
 
-    public boolean isUserError() {
-        return isUserError;
-    }
 }

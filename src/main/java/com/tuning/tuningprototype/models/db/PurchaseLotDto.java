@@ -11,6 +11,7 @@ public record PurchaseLotDto(
         String ticker,
         BigDecimal purchasePrice,
         BigDecimal purchaseAmount,
+        Long purchaseTime,
         Long createdTime,
         Long modifiedTime,
         List<AssetSaleDto> assetSales) {}

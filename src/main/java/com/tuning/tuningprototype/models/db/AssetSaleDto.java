@@ -10,5 +10,6 @@ public record AssetSaleDto(
         String ticker,
         BigDecimal salePrice,
         BigDecimal saleAmount,
+        Long saleTime,
         Long createdTime,
         Long modifiedTime) {}

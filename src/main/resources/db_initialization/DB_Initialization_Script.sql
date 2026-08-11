@@ -70,13 +70,15 @@ CREATE TABLE wallets (
                          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                          experiment_id BIGINT UNSIGNED NOT NULL,
                          starting_money_amount DECIMAL(19, 4) NOT NULL,
-                         current_money_amount DECIMAL(19, 4) NOT NULL,
+                         opened_time DATETIME NOT NULL,
                          currency_code VARCHAR(3) NOT NULL,
                          created_time DATETIME NOT NULL,
                          modified_time DATETIME NOT NULL,
                          PRIMARY KEY (id),
                          CONSTRAINT fk_wallet_experiment
-                             FOREIGN KEY (experiment_id) REFERENCES experiments (id)
+                             FOREIGN KEY (experiment_id) REFERENCES experiments (id),
+                         CONSTRAINT uq_wallets_experiments_currency
+                             UNIQUE (experiment_id, currency_code)
 ) ENGINE = InnoDB;
 
 CREATE TABLE decisions (
@@ -100,6 +102,7 @@ CREATE TABLE purchase_lots (
                                ticker VARCHAR(10) NOT NULL,
                                purchase_price DECIMAL(19, 4) NOT NULL,
                                purchase_amount DECIMAL(19, 4) NOT NULL,
+                               purchase_time DATETIME NOT NULL,
                                created_time DATETIME NOT NULL,
                                modified_time DATETIME NOT NULL,
                                PRIMARY KEY (id),
@@ -116,6 +119,7 @@ CREATE TABLE asset_sales (
                              ticker VARCHAR(10) NOT NULL,
                              sale_price DECIMAL(19, 4) NOT NULL,
                              sale_amount DECIMAL(19, 4) NOT NULL,
+                             sale_time DATETIME NOT NULL,
                              created_time DATETIME NOT NULL,
                              modified_time DATETIME NOT NULL,
                              PRIMARY KEY (id),

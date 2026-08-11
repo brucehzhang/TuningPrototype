@@ -16,7 +16,7 @@ public class WalletRequestMapperImpl implements WalletRequestMapper {
         return Wallet.builder()
                 .experimentId(request.experimentId())
                 .startingMoneyAmount(request.startingMoneyAmount())
-                .currentMoneyAmount(request.startingMoneyAmount()) // starts equal to starting amount
+                .openedTime(request.openedTime()) // starts equal to starting amount
                 .currencyCode(request.currencyCode())
                 .createdTime(nowEpochSeconds)  // server-controlled
                 .modifiedTime(nowEpochSeconds) // server-controlled
@@ -31,7 +31,6 @@ public class WalletRequestMapperImpl implements WalletRequestMapper {
     public void applyUpdate(UpdateWalletRequest request, Wallet existing, Long nowEpochSeconds) {
         if (request.startingMoneyAmount() != null) {
             existing.setStartingMoneyAmount(request.startingMoneyAmount());
-            existing.setCurrentMoneyAmount(request.startingMoneyAmount());
         }
         if (request.currencyCode() != null) {
             existing.setCurrencyCode(request.currencyCode());

@@ -19,10 +19,15 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
      * Fetches the wallet with its purchase lots initialized in one query.
      */
     @EntityGraph(attributePaths = {"purchaseLots"})
-    Optional<Wallet> findWithPurchaseLotsById(Long id);
+    Optional<Wallet> findWithPurchaseLotsByExperimentId(Long id);
 
     /**
      * All wallets for a given experiment, via the plain FK column.
      */
     List<Wallet> findByExperimentId(Long experimentId);
+
+    /**
+     * Non-nested lookup for wallet by experiment id and opened time less than equal
+     */
+    List<Wallet> findByExperimentIdAndOpenedTimeIsLessThanEqual(Long experimentId, Long openedTimeIsLessThan);
 }

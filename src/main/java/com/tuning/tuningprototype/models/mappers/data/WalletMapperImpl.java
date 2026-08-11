@@ -23,7 +23,7 @@ public class WalletMapperImpl implements WalletMapper {
                 wallet.getId(),
                 wallet.getExperimentId(),
                 wallet.getStartingMoneyAmount(),
-                wallet.getCurrentMoneyAmount(),
+                wallet.getOpenedTime(),
                 wallet.getCurrencyCode(),
                 wallet.getCreatedTime(),
                 wallet.getModifiedTime(),
@@ -40,7 +40,7 @@ public class WalletMapperImpl implements WalletMapper {
                 .id(dto.id())
                 .experimentId(dto.experimentId())
                 .startingMoneyAmount(dto.startingMoneyAmount())
-                .currentMoneyAmount(dto.currentMoneyAmount())
+                .openedTime(dto.openedTime())
                 .currencyCode(dto.currencyCode())
                 .createdTime(dto.createdTime())
                 .modifiedTime(dto.modifiedTime())

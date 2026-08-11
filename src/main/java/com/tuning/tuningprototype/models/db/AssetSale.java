@@ -52,6 +52,13 @@ public class AssetSale {
     private BigDecimal saleAmount;
 
     /**
+     * The Unix time representing when this sale was done
+     */
+    @Column(name = "sale_time", nullable = false)
+    @Convert(converter = UnixTimestampConverter.class)
+    private Long saleTime;
+
+    /**
      * The Unix time of when the asset sale was created
      */
     @Column(name = "created_time", nullable = false)
