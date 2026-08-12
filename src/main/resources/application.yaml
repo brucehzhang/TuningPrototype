@@ -7,6 +7,11 @@ spring:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
       endpoint: http://localhost:4566
+    stream:
+      bindings:
+        # <identifier>-<in/out>-<index>
+        publishSamplingAgentEvent-out-0:
+          destination: sampling_agent_event_stream
   jpa:
     hibernate:
       ddl-auto: validate

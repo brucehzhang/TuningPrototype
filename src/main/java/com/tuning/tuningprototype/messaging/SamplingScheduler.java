@@ -12,13 +12,13 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class SampleScheduler {
+public class SamplingScheduler {
 
     private static final String SCHEDULE_NAME_PREFIX = "scheduled_sample.exp_id_%s.time_%s";
     private final SchedulerClient _schedulerClient;
     private final JsonMapper _jsonMapper;
 
-    public SampleScheduler(SchedulerClient schedulerClient, JsonMapper jsonMapper) {
+    public SamplingScheduler(SchedulerClient schedulerClient, JsonMapper jsonMapper) {
         _schedulerClient = schedulerClient;
         _jsonMapper = jsonMapper;
     }

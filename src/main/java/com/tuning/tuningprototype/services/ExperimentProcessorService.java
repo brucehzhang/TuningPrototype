@@ -1,7 +1,8 @@
 package com.tuning.tuningprototype.services;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
-import com.tuning.tuningprototype.messaging.SampleScheduler;
+import com.tuning.tuningprototype.messaging.SamplingAgentEventPublisher;
+import com.tuning.tuningprototype.messaging.SamplingScheduler;
 import com.tuning.tuningprototype.messaging.SamplingQueuePublisher;
 import com.tuning.tuningprototype.models.db.Experiment;
 import com.tuning.tuningprototype.models.db.ExperimentDto;
@@ -20,24 +21,26 @@ import java.time.Instant;
 public class ExperimentProcessorService {
 
     private final ExperimentRepository _experimentRepository;
-    private final SampleService _sampleService;
-    private final WalletService _walletService;
-    private final SamplingQueuePublisher _samplingQueuePublisher;
-    private final SampleScheduler _sampleScheduler;
     private final ExperimentMapper _experimentMapper;
+    private final SampleService _sampleService;
+    private final SamplingQueuePublisher _samplingQueuePublisher;
+    private final SamplingScheduler _samplingScheduler;
+    private final SamplingAgentEventPublisher _samplingAgentEventPublisher;
+    private final WalletService _walletService;
 
     public ExperimentProcessorService(ExperimentRepository experimentRepository,
+                                      ExperimentMapper experimentMapper,
                                       SampleService sampleService,
-                                      WalletService walletService,
                                       SamplingQueuePublisher samplingQueuePublisher,
-                                      SampleScheduler sampleScheduler,
-                                      ExperimentMapper experimentMapper) {
+                                      SamplingScheduler samplingScheduler, SamplingAgentEventPublisher samplingAgentEventPublisher,
+                                      WalletService walletService) {
         _experimentRepository = experimentRepository;
-        _sampleService = sampleService;
-        _walletService = walletService;
-        _samplingQueuePublisher = samplingQueuePublisher;
-        _sampleScheduler = sampleScheduler;
         _experimentMapper = experimentMapper;
+        _sampleService = sampleService;
+        _samplingQueuePublisher = samplingQueuePublisher;
+        _samplingScheduler = samplingScheduler;
+        _samplingAgentEventPublisher = samplingAgentEventPublisher;
+        _walletService = walletService;
     }
 
     /**
@@ -63,7 +66,7 @@ public class ExperimentProcessorService {
         if (experiment.getExperimentStartTime() < Instant.now().getEpochSecond()) {
             _samplingQueuePublisher.sendMessage(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         } else {
-            _sampleScheduler.scheduleSampleRun(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
+            _samplingScheduler.scheduleSampleRun(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         }
         return _experimentMapper.toDto(updatedExperiment);
     }
@@ -74,10 +77,16 @@ public class ExperimentProcessorService {
      * @param createSampleRequest The request dto for creating the sample
      * @return The dto of the created sample
      */
+    @Transactional
     public SampleDto startSampling(CreateSampleRequest createSampleRequest) {
         SampleDto createdSample = _sampleService.createSample(createSampleRequest);
-        // TODO:: Send AWS Kinesis message for agents to begin decision-making
-        System.out.println("Agent call happening for sample " + createdSample);
+        boolean sent = _samplingAgentEventPublisher.publishSamplingAgentEvent(createdSample);
+        // TODO:: Log better
+        if (sent) {
+            System.out.println("Sampling agent event delivered for sample " + createdSample);
+        } else {
+            System.out.println("Sampling agent event could not be delivered for sample " + createdSample);
+        }
         return createdSample;
     }
 
