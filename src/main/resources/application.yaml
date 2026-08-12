@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: TuningPrototype
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      endpoint: http://localhost:4566
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 20
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+
+server:
+  port: 8080
+
+app:
+  datasource:
+    url: jdbc:mysql://localhost:3306/strategy_tuning_db
+    username: ${STRATEGY_TUNING_DB_ADMIN_USER}
+    password: ${STRATEGY_TUNING_DB_ADMIN_PASS}
+    configuration:
+      maximum-pool-size: 30

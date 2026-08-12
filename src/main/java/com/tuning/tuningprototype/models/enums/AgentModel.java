@@ -17,5 +17,7 @@ public enum AgentModel {
     GPT_5_5_PRO,
     GPT_5_6_SOL,
     GPT_5_6_TERRA,
-    GPT_5_6_LUNA
+    GPT_5_6_LUNA,
+    GEMINI_3_6_FLASH,
+    GEMINI_3_5_FLASH
 }
