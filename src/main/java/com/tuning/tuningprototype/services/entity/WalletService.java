@@ -107,7 +107,6 @@ public class WalletService {
      * @param id The experiment that the default wallet is being created for
      * @param openedTime The openedTime to be set for the default wallet, should be the experiment start time.
      */
-    @Transactional(propagation = Propagation.SUPPORTS)
     public void createDefaultWallet(long id, long openedTime) {
         List<Wallet> walletList = _walletRepository.findByExperimentId(id);
         if (!walletList.isEmpty()) {

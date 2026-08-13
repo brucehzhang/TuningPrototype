@@ -75,6 +75,7 @@ public class ExperimentService {
      */
     @Transactional
     public ExperimentDto createExperiment(CreateExperimentRequest createExperimentRequest, long createdUserId) {
+        // TODO:: Sanitize the prompt, throw exception if malicious.
         Experiment createdExperiment = _experimentRepository.save(_experimentRequestMapper
                 .toEntity(createExperimentRequest, createdUserId, Instant.now().getEpochSecond()));
         return _experimentMapper.toDto(createdExperiment);
@@ -92,6 +93,7 @@ public class ExperimentService {
         if (experimentToUpdate.getExperimentStatus() != ExperimentStatus.DRAFT) {
             throw new ExperimentException("Experiment is not in DRAFT state and is no longer editable.", true);
         }
+        // TODO:: Sanitize the prompt if being updated, throw exception if malicious.
         _experimentRequestMapper
                 .applyUpdate(updateExperimentRequest, experimentToUpdate, Instant.now().getEpochSecond());
         Experiment updatedExperiment = _experimentRepository.save(experimentToUpdate);

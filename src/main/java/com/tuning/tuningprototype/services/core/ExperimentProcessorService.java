@@ -16,7 +16,6 @@ import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import com.tuning.tuningprototype.services.entity.SampleService;
 import com.tuning.tuningprototype.services.entity.WalletService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
@@ -58,7 +57,6 @@ public class ExperimentProcessorService {
      * @param experimentId Id of the experiment
      * @return The dto of the started experiment
      */
-    @Transactional
     public ExperimentDto runExperiment(long experimentId) {
         Experiment experiment = _experimentRepository.findWithWalletsById(experimentId)
                 .orElseThrow(() -> new ExperimentException("Experiment " + experimentId + " could not be found.", true));
@@ -84,7 +82,6 @@ public class ExperimentProcessorService {
      * @param createSampleRequest The request dto for creating the sample
      * @return The dto of the created sample
      */
-    @Transactional
     public SampleDto startSampling(CreateSampleRequest createSampleRequest) {
         Experiment experiment = _experimentRepository.findById(createSampleRequest.experimentId())
                 .orElseThrow();
@@ -93,6 +90,7 @@ public class ExperimentProcessorService {
         SamplingAgentEvent event = new SamplingAgentEvent(experiment.getId(),
                 experiment.getStrategyPrompt(),
                 experiment.getAgentModel(),
+                experiment.getSamplingWindow(),
                 createdSample.id(),
                 createdSample.samplingTime(),
                 finances);
@@ -100,9 +98,10 @@ public class ExperimentProcessorService {
         System.out.println("Publishing sampling agent event: " + event);
         boolean sent = _samplingAgentEventPublisher.publishSamplingAgentEvent(event);
         if (sent) {
-            System.out.println("Sampling agent event delivered for sample " + createdSample);
+            System.out.println("Sampling agent event delivered for sample " + createdSample.id());
         } else {
-            System.out.println("Sampling agent event could not be delivered for sample " + createdSample);
+            // TODO:: Set to failure
+            System.out.println("Sampling agent event could not be delivered for sample " + createdSample.id());
         }
         return createdSample;
     }
@@ -114,7 +113,6 @@ public class ExperimentProcessorService {
      * @param experimentId The id of the experiment that is ending
      * @return The dto of the experiment that has ended.
      */
-    @Transactional
     public ExperimentDto endExperiment(long experimentId) {
         // TODO:: Implement this
         System.out.println("NO-OP");
