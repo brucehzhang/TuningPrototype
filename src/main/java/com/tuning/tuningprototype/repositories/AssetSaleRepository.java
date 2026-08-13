@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.repositories;
 
-import com.tuning.tuningprototype.models.db.AssetSale;
+import com.tuning.tuningprototype.models.db.entity.AssetSale;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;

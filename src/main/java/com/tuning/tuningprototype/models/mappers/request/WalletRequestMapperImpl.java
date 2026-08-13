@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.models.mappers.request;
 
-import com.tuning.tuningprototype.models.db.Wallet;
+import com.tuning.tuningprototype.models.db.entity.Wallet;
 import com.tuning.tuningprototype.models.requests.CreateWalletRequest;
 import com.tuning.tuningprototype.models.requests.UpdateWalletRequest;
 import org.springframework.stereotype.Component;

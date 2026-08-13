@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.messaging;
 
-import com.tuning.tuningprototype.models.db.SampleDto;
+import com.tuning.tuningprototype.models.events.SamplingAgentEvent;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ public class SamplingAgentEventPublisher {
         _streamBridge = streamBridge;
     }
 
-    public boolean publishSamplingAgentEvent(SampleDto sample) {
-        return _streamBridge.send(TARGET_BINDING, sample);
+    public boolean publishSamplingAgentEvent(SamplingAgentEvent event) {
+        return _streamBridge.send(TARGET_BINDING, event);
     }
 }

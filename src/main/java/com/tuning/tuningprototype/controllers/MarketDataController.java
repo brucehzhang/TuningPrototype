@@ -7,7 +7,7 @@ import com.tuning.tuningprototype.models.responses.ErrorResponse;
 import com.tuning.tuningprototype.models.responses.NewsDataResponse;
 import com.tuning.tuningprototype.models.responses.StockAggregateDataResponse;
 import com.tuning.tuningprototype.models.responses.StockTradeDataResponse;
-import com.tuning.tuningprototype.services.IMarketAnalysisService;
+import com.tuning.tuningprototype.services.integration.IMarketAnalysisService;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.beans.factory.annotation.Qualifier;

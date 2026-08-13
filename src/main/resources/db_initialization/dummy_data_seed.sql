@@ -99,15 +99,15 @@ INSERT INTO decisions (id, sample_id, decision_type, ticker, reasoning, decision
 -- ============================================================================
 -- PURCHASE_LOTS (only resulting from BUY decisions: decisions 1 and 4)
 -- ============================================================================
-INSERT INTO purchase_lots (id, purchase_decision_id, wallet_id, ticker, purchase_price, purchase_amount, created_time, modified_time) VALUES
-                                                                                                                                          (1, 1, 1, 'NVDA', 125.4000, 100.0000, '2026-01-01 10:05:35', '2026-01-01 10:05:35'),
-                                                                                                                                          (2, 4, 2, 'XOM',  108.2000, 50.0000,  '2026-01-02 11:05:35', '2026-01-02 11:05:35');
+INSERT INTO purchase_lots (id, purchase_decision_id, wallet_id, ticker, purchase_price, purchase_quantity, purchase_time, created_time, modified_time) VALUES
+                                                                                                                                          (1, 1, 1, 'NVDA', 125.4000, 100.0000, '2026-01-01 10:05:35', '2026-01-01 10:05:35', '2026-01-01 10:05:35'),
+                                                                                                                                          (2, 4, 2, 'XOM',  108.2000, 50.0000,  '2026-01-02 11:05:35', '2026-01-02 11:05:35', '2026-01-02 11:05:35');
 
 -- ============================================================================
 -- ASSET_SALES (resulting from SELL decisions: decision 3 sells part of lot 1)
 -- ============================================================================
-INSERT INTO asset_sales (id, sale_decision_id, purchase_lot_id, ticker, sale_price, sale_amount, created_time, modified_time) VALUES
-    (1, 3, 1, 'NVDA', 142.7500, 60.0000, '2026-01-01 10:07:35', '2026-01-01 10:07:35');
+INSERT INTO asset_sales (id, sale_decision_id, purchase_lot_id, ticker, sale_price, sale_quantity, sale_time, created_time, modified_time) VALUES
+    (1, 3, 1, 'NVDA', 142.7500, 60.0000, '2026-01-01 10:07:35', '2026-01-01 10:07:35', '2026-01-01 10:07:35');
 
 -- ============================================================================
 -- Sanity check queries (optional — comment out if not needed)

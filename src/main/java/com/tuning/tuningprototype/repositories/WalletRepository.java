@@ -1,6 +1,6 @@
 package com.tuning.tuningprototype.repositories;
 
-import com.tuning.tuningprototype.models.db.Wallet;
+import com.tuning.tuningprototype.models.db.entity.Wallet;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

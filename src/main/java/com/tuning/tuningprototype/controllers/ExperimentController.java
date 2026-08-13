@@ -1,13 +1,14 @@
 package com.tuning.tuningprototype.controllers;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
-import com.tuning.tuningprototype.models.db.ExperimentDto;
+import com.tuning.tuningprototype.models.db.entity.ExperimentDto;
 import com.tuning.tuningprototype.models.requests.*;
 import com.tuning.tuningprototype.models.responses.ErrorResponse;
-import com.tuning.tuningprototype.services.ExperimentProcessorService;
-import com.tuning.tuningprototype.services.ExperimentService;
-import com.tuning.tuningprototype.services.SampleService;
-import com.tuning.tuningprototype.services.WalletService;
+import com.tuning.tuningprototype.services.core.ExperimentProcessorService;
+import com.tuning.tuningprototype.services.core.FinancialSummaryService;
+import com.tuning.tuningprototype.services.entity.ExperimentService;
+import com.tuning.tuningprototype.services.entity.SampleService;
+import com.tuning.tuningprototype.services.entity.WalletService;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.http.HttpStatus;
@@ -22,12 +23,14 @@ public class ExperimentController {
 
     private final ExperimentService _experimentService;
     private final ExperimentProcessorService _experimentProcessorService;
+    private final FinancialSummaryService _financialSummaryService;
     private final SampleService _sampleService;
     private final WalletService _walletService;
 
-    public ExperimentController(ExperimentService experimentService, ExperimentProcessorService experimentProcessorService, SampleService sampleService, WalletService walletService) {
+    public ExperimentController(ExperimentService experimentService, ExperimentProcessorService experimentProcessorService, FinancialSummaryService financialSummaryService, SampleService sampleService, WalletService walletService) {
         _experimentService = experimentService;
         _experimentProcessorService = experimentProcessorService;
+        _financialSummaryService = financialSummaryService;
         _sampleService = sampleService;
         _walletService = walletService;
     }
@@ -200,7 +203,31 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_walletService.getWalletsByExperiment(experimentId, checkTime));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " getting finances: " + e.getMessage();
+            String message = "Exception occurred for experiment " + experimentId + " getting wallets: " + e.getMessage();
+            return handleException(e, message);
+        }
+    }
+
+    /**
+     * Fetches the experiment's summarized financial details (current money amounts and active quantities only) at the
+     * provided checkTime in epoch seconds. Defaults to now if no time provided.
+     *
+     * @param experimentId The id of the experiment that we are summarizing the finances for.
+     * @param checkTime The point-in-time in epoch seconds that we are checking against.
+     * @return Summarized experiment finances containing current money amounts and active quantities at the point in time.
+     */
+    @GetMapping("/{experimentId}/finances")
+    @McpTool(description = "Fetches the experiment's summarized financial details (current money amounts and active " +
+            "quantities only) at the provided checkTime in epoch seconds. Defaults to now if no time provided.")
+    public ResponseEntity<?> getExperimentFinances(
+            @McpToolParam(description = "The id of the experiment that we are summarizing the finances for.")
+            @PathVariable("experimentId") long experimentId,
+            @McpToolParam(description = "The point-in-time in epoch seconds that we are checking against.")
+            @RequestParam(required = false) Long checkTime) {
+        try {
+            return ResponseEntity.ok(_financialSummaryService.getExperimentFinancesAt(experimentId, checkTime));
+        } catch (Exception e) {
+            String message = "Exception occurred for experiment " + experimentId + " getting summarized finances: " + e.getMessage();
             return handleException(e, message);
         }
     }
