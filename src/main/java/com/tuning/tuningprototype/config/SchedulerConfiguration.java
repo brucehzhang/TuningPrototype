@@ -13,17 +13,17 @@ import java.net.URISyntaxException;
 @Configuration
 public class SchedulerConfiguration {
 
-    @Value("${spring.cloud.aws.endpoint}")
-    private String endpointOverride;
+//    @Value("${spring.cloud.aws.endpoint}")
+//    private String endpointOverride;
 
     @Bean
     public SchedulerClient getSchedulerClient(AwsCredentialsProvider awsCredentialsProvider) throws URISyntaxException {
         SchedulerClientBuilder builder = SchedulerClient.builder()
                 .credentialsProvider(awsCredentialsProvider);
-        // LocalStack override only for locally running server
-        if (endpointOverride.contains("localhost")) {
-            builder.endpointOverride(new URI(endpointOverride));
-        }
+//        // LocalStack override only for locally running server
+//        if (endpointOverride.contains("localhost")) {
+//            builder.endpointOverride(new URI(endpointOverride));
+//        }
         return builder.build();
     }
 }

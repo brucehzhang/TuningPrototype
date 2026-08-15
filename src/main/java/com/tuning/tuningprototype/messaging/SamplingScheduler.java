@@ -14,6 +14,9 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class SamplingScheduler {
 
+    // TODO:: Replace this with KMS
+    private static final String SAMPLING_QUEUE_ARN = "arn:aws:sqs:ap-southeast-2:102001485020:sampling_scheduler_queue";
+    private static final String SCHEDULER_EXECUTION_ROLE_ARN = "arn:aws:iam::102001485020:role/SchedulerExecutionRole";
     private static final String SCHEDULE_NAME_PREFIX = "scheduled_sample.exp_id_%s.time_%s";
     private final SchedulerClient _schedulerClient;
     private final JsonMapper _jsonMapper;
@@ -33,8 +36,8 @@ public class SamplingScheduler {
         // For local dev, this is currently mocked by LocalStack.
         // TODO:: Move these to KMS.
         Target target = Target.builder()
-                .arn("arn:aws:sqs:us-east-1:000000000000:sampling_scheduler_queue")
-                .roleArn("arn:aws:iam::000000000000:role/EventBridgeSchedulerExecutionRole")
+                .arn(SAMPLING_QUEUE_ARN)
+                .roleArn(SCHEDULER_EXECUTION_ROLE_ARN)
                 .input(_jsonMapper.writeValueAsString(message)) // JSON payload sent to target
                 .build();
         // Build and send the schedule request
