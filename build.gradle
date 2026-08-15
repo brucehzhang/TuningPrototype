@@ -36,8 +36,10 @@ dependencies {
     // Add further AWS starter or BOM dependencies here
     implementation 'io.awspring.cloud:spring-cloud-aws-starter'
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
-    implementation 'io.awspring.cloud:spring-cloud-aws-kinesis-stream-binder'
+//    implementation 'io.awspring.cloud:spring-cloud-aws-kinesis-stream-binder'
+//    implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
     implementation 'software.amazon.awssdk:scheduler'
+    implementation 'software.amazon.awssdk:signin'
     // Alpaca SDK
     implementation("markets.alpaca:alpaca-java:0.1.1")
     compileOnly 'org.projectlombok:lombok'

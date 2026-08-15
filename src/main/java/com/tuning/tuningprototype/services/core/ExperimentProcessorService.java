@@ -69,8 +69,10 @@ public class ExperimentProcessorService {
         experiment.setExperimentStatus(ExperimentStatus.IN_PROGRESS);
         Experiment updatedExperiment = _experimentRepository.save(experiment);
         if (experiment.getExperimentStartTime() < Instant.now().getEpochSecond()) {
+            System.out.println("Directly starting sampling for experiment " + experimentId);
             _samplingQueuePublisher.sendMessage(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         } else {
+            System.out.println("Scheduling first sampling for experiment " + experimentId + " at " + experiment.getExperimentStartTime());
             _samplingScheduler.scheduleSampleRun(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         }
         return _experimentMapper.toDto(updatedExperiment);

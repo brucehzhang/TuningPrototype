@@ -1,6 +1,7 @@
 package com.tuning.tuningprototype.messaging;
 
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.scheduler.SchedulerClient;
 import software.amazon.awssdk.services.scheduler.model.*;
@@ -13,6 +14,12 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 public class SamplingScheduler {
+
+    @Value("${SAMPLING_SCHEDULER_QUEUE_ARN}")
+    private String SAMPLING_SCHEDULER_QUEUE_ARN;
+
+    @Value("${SCHEDULER_EXECUTION_ROLE_ARN}")
+    private String SCHEDULER_EXECUTION_ROLE_ARN;
 
     private static final String SCHEDULE_NAME_PREFIX = "scheduled_sample.exp_id_%s.time_%s";
     private final SchedulerClient _schedulerClient;
@@ -31,10 +38,9 @@ public class SamplingScheduler {
 
         // Set target to SNS queue for scheduler
         // For local dev, this is currently mocked by LocalStack.
-        // TODO:: Move these to KMS.
         Target target = Target.builder()
-                .arn("arn:aws:sqs:us-east-1:000000000000:sampling_scheduler_queue")
-                .roleArn("arn:aws:iam::000000000000:role/EventBridgeSchedulerExecutionRole")
+                .arn(SAMPLING_SCHEDULER_QUEUE_ARN)
+                .roleArn(SCHEDULER_EXECUTION_ROLE_ARN)
                 .input(_jsonMapper.writeValueAsString(message)) // JSON payload sent to target
                 .build();
         // Build and send the schedule request

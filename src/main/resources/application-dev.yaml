@@ -1,12 +1,10 @@
 spring:
   application:
     name: TuningPrototype
-  cloud:
-    aws:
-      credentials:
-        profile:
-          name: default
-#    Not needed since we are using credentials from ~/.aws/credentials, uncomment if static properties are needed
+#  cloud:
+#    TODO:: Figure out what we need for EKS, definitely not static keys
+#    aws:
+#      credentials:
 #        access-key: ${AWS_ACCESS_KEY_ID}
 #        secret-key: ${AWS_SECRET_ACCESS_KEY}
 #
@@ -33,7 +31,7 @@ server:
 
 app:
   datasource:
-    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&useSSL=true&sslMode=VERIFY_CA
+    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&useSSL=true&requireSSL=true&verifyServerCertificate=true&trustCertificateKeyStoreUrl=file:/etc/tuning-prototype/certs/rds-truststore.jks&trustCertificateKeyStorePassword=${TRUSTSTORE_PASSWORD}
     username: ${STRATEGY_TUNING_DB_ADMIN_USER}
     password: ${STRATEGY_TUNING_DB_ADMIN_PASS}
     configuration:
