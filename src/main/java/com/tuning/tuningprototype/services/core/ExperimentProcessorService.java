@@ -9,12 +9,16 @@ import com.tuning.tuningprototype.models.db.entity.Experiment;
 import com.tuning.tuningprototype.models.db.entity.ExperimentDto;
 import com.tuning.tuningprototype.models.db.entity.SampleDto;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
+import com.tuning.tuningprototype.models.enums.SamplingStatus;
 import com.tuning.tuningprototype.models.events.SamplingAgentEvent;
 import com.tuning.tuningprototype.models.mappers.data.entity.ExperimentMapper;
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
+import com.tuning.tuningprototype.models.requests.UpdateSampleRequest;
 import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import com.tuning.tuningprototype.services.entity.SampleService;
 import com.tuning.tuningprototype.services.entity.WalletService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -22,6 +26,8 @@ import java.time.Instant;
 // Processor service used for facilitation Experiment executions (start, sampling, end)
 @Service
 public class ExperimentProcessorService {
+
+    private static final Logger log = LoggerFactory.getLogger(ExperimentProcessorService.class);
 
     private final ExperimentRepository _experimentRepository;
     private final ExperimentMapper _experimentMapper;
@@ -69,10 +75,10 @@ public class ExperimentProcessorService {
         experiment.setExperimentStatus(ExperimentStatus.IN_PROGRESS);
         Experiment updatedExperiment = _experimentRepository.save(experiment);
         if (experiment.getExperimentStartTime() < Instant.now().getEpochSecond()) {
-            System.out.println("Directly starting sampling for experiment " + experimentId);
+            log.info("Directly starting sampling for experiment {}", experimentId);
             _samplingQueuePublisher.sendMessage(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         } else {
-            System.out.println("Scheduling first sampling for experiment " + experimentId + " at " + experiment.getExperimentStartTime());
+            log.info("Scheduling first sampling for experiment {} at {}", experimentId, experiment.getExperimentStartTime());
             _samplingScheduler.scheduleSampleRun(new CreateSampleRequest(experiment.getId(), null, experiment.getExperimentStartTime()));
         }
         return _experimentMapper.toDto(updatedExperiment);
@@ -96,14 +102,13 @@ public class ExperimentProcessorService {
                 createdSample.id(),
                 createdSample.samplingTime(),
                 finances);
-        // TODO:: Log better
-        System.out.println("Publishing sampling agent event: " + event);
-        boolean sent = _samplingAgentEventPublisher.publishSamplingAgentEvent(event);
-        if (sent) {
-            System.out.println("Sampling agent event delivered for sample " + createdSample.id());
-        } else {
-            // TODO:: Set to failure
-            System.out.println("Sampling agent event could not be delivered for sample " + createdSample.id());
+        try {
+            log.info("Publishing sampling agent event: {}", event);
+            _samplingAgentEventPublisher.publishSamplingAgentEvent(event);
+            log.info("Sampling agent event delivered for sample {}", createdSample.id());
+        } catch (Exception e) {
+            log.error("Sampling agent event could not be delivered for sample {}", createdSample.id());
+            _sampleService.updateSample(new UpdateSampleRequest(createdSample.id(), null, SamplingStatus.FAILED), experiment.getId());
         }
         return createdSample;
     }
@@ -117,7 +122,7 @@ public class ExperimentProcessorService {
      */
     public ExperimentDto endExperiment(long experimentId) {
         // TODO:: Implement this
-        System.out.println("NO-OP");
+        log.warn("NO-OP");
         return null;
     }
 }

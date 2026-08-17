@@ -10,6 +10,8 @@ import markets.alpaca.client.openapi.data.api.NewsApi;
 import markets.alpaca.client.openapi.data.api.StockApi;
 import markets.alpaca.client.openapi.data.http.ApiException;
 import markets.alpaca.client.openapi.data.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 
 @Service("alpacaMarketAnalysisService")
 public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
+
+    private static final Logger log = LoggerFactory.getLogger(AlpacaMarketAnalysisService.class);
 
     private final AlpacaClient _alpacaClient;
     private final StockApi _stockApiClient;
@@ -63,8 +67,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
             }
             return tradeMap;
         } catch (ApiException apiException) {
-            // TODO:: Proper logging
-            System.out.println("Exception occurred while getting stock trade data: " + apiException.getMessage());
+            log.error("Exception occurred while getting stock trade data: {}", apiException.getMessage());
             // Categorize exception into general MarketDataException.
             throw new MarketDataException(apiException.getMessage());
         }
@@ -148,8 +151,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
             }
             return aggregateMap;
         } catch (ApiException apiException) {
-            // TODO:: Proper logging
-            System.out.println("Exception occurred while getting stock aggregate data: " + apiException.getMessage());
+            log.error("Exception occurred while getting stock aggregate data: {}", apiException.getMessage());
             // Categorize exception into general MarketDataException.
             throw new MarketDataException(apiException.getMessage());
         }
@@ -228,8 +230,7 @@ public class AlpacaMarketAnalysisService implements IMarketAnalysisService {
             }
             return newsArticleMap;
         } catch (ApiException apiException) {
-            // TODO:: Proper logging
-            System.out.println("Exception occurred while getting news data: " + apiException.getMessage());
+            log.error("Exception occurred while getting news data: {}", apiException.getMessage());
             // Categorize exception into general MarketDataException.
             throw new MarketDataException(apiException.getMessage());
         }

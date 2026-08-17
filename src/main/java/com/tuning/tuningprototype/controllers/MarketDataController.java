@@ -8,6 +8,8 @@ import com.tuning.tuningprototype.models.responses.NewsDataResponse;
 import com.tuning.tuningprototype.models.responses.StockAggregateDataResponse;
 import com.tuning.tuningprototype.models.responses.StockTradeDataResponse;
 import com.tuning.tuningprototype.services.integration.IMarketAnalysisService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +26,8 @@ import java.time.temporal.ChronoUnit;
 @Controller
 @RequestMapping(value = "/marketData", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MarketDataController {
+
+    private static final Logger log = LoggerFactory.getLogger(MarketDataController.class);
 
     private final IMarketAnalysisService _alpacaMarketAnalysisService;
 
@@ -118,8 +122,7 @@ public class MarketDataController {
 
     // shared exception handling method
     private ResponseEntity<?> handleException(Exception e, String message) {
-        // TODO:: Logging
-        System.out.println(message);
+        log.error(message);
         ErrorResponse response = new ErrorResponse(message);
         return ResponseEntity.internalServerError().body(response);
     }

@@ -37,3 +37,9 @@ app:
     configuration:
       maximum-pool-size: 30
       driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    root: info
+  file:
+    name: logs/application.log
