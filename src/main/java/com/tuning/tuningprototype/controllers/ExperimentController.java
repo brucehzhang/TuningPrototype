@@ -9,6 +9,8 @@ import com.tuning.tuningprototype.services.core.FinancialSummaryService;
 import com.tuning.tuningprototype.services.entity.ExperimentService;
 import com.tuning.tuningprototype.services.entity.SampleService;
 import com.tuning.tuningprototype.services.entity.WalletService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping(value = "/experiments", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ExperimentController {
+
+    private static final Logger log = LoggerFactory.getLogger(ExperimentController.class);
 
     private final ExperimentService _experimentService;
     private final ExperimentProcessorService _experimentProcessorService;
@@ -45,8 +49,9 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok().body("Service is online");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(String.format("Experiments Internal Error: %s", e.getMessage()));
+            String message = String.format("Experiments Internal Error: %s", e.getMessage());
+            log.error(message);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
     }
 
@@ -74,6 +79,7 @@ public class ExperimentController {
     public ResponseEntity<?> createExperiment(@RequestBody CreateExperimentRequest createExperimentRequest,
                                                           @RequestParam long createdUserId) {
         try {
+            log.info("Received createExperiment request: {}", createExperimentRequest);
             return ResponseEntity.ok(_experimentService.createExperiment(createExperimentRequest, createdUserId));
         } catch (Exception e) {
             String message = "Exception occurred creating experiment: " + e.getMessage();
@@ -90,6 +96,7 @@ public class ExperimentController {
     @PatchMapping
     public ResponseEntity<?> updateExperiment(@RequestBody UpdateExperimentRequest updateExperimentRequest) {
         try {
+            log.info("Received updateExperiment request: {}", updateExperimentRequest);
             return ResponseEntity.ok(_experimentService.updateExperiment(updateExperimentRequest));
         } catch (Exception e) {
             String message = "Exception occurred updating experiment: " + e.getMessage();
@@ -108,6 +115,7 @@ public class ExperimentController {
     @PostMapping("/{experimentId}/samples")
     public ResponseEntity<?> createSample(@PathVariable("experimentId") long experimentId, @RequestBody CreateSampleRequest createSampleRequest) {
         try {
+            log.info("Received createSample request for experiment {}: {}", experimentId, createSampleRequest);
             if (experimentId != createSampleRequest.experimentId()) {
                 throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
@@ -135,6 +143,7 @@ public class ExperimentController {
                     "The status will be updated to complete after all trade decisions have been COMPLETED, or FAILED if anything goes wrong.")
             @RequestBody UpdateSampleRequest updateSampleRequest) {
         try {
+            log.info("Received updateSample request for experiment {}: {}", experimentId, updateSampleRequest);
             return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
         } catch (Exception e) {
             String message = "Exception occurred for experiment " + experimentId + " updating sample: " + e.getMessage();
@@ -153,6 +162,7 @@ public class ExperimentController {
     @PostMapping("/{experimentId}/run")
     public ResponseEntity<?> runExperiment(@PathVariable("experimentId") long experimentId) {
         try {
+            log.info("Received runExperiment request: {}", experimentId);
             return ResponseEntity.ok(_experimentProcessorService.runExperiment(experimentId));
         } catch (Exception e) {
             String message = "Exception occurred running experiment " + experimentId + ": " + e.getMessage();
@@ -171,6 +181,7 @@ public class ExperimentController {
     public ResponseEntity<?> createWallet(@PathVariable("experimentId") long experimentId,
                                           @RequestBody CreateWalletRequest createWalletRequest) {
         try {
+            log.info("Received createWallet request for experiment {}: {}", experimentId, createWalletRequest);
             if (experimentId != createWalletRequest.experimentId()) {
                 throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
@@ -244,6 +255,7 @@ public class ExperimentController {
             @PathVariable("experimentId") long experimentId,
             @RequestBody UpdateWalletRequest updateWalletRequest) {
         try {
+            log.info("Received updateWallet request for experiment {}: {}", experimentId, updateWalletRequest);
             return ResponseEntity.ok(_walletService.updateStartingWallet(updateWalletRequest, experimentId));
         } catch (Exception e) {
             String message = "Exception occurred for experiment " + experimentId + " updating wallet: " + e.getMessage();
@@ -253,12 +265,12 @@ public class ExperimentController {
 
     // shared exception handling method
     private ResponseEntity<?> handleException(Exception e, String message) {
-        // TODO:: Logging
-        System.out.println(message);
         ErrorResponse response = new ErrorResponse(message);
         if (e instanceof ExperimentException && ((ExperimentException) e).isUserError()) {
+            log.warn(message);
             return ResponseEntity.badRequest().body(response);
         }
+        log.error(message);
         return ResponseEntity.internalServerError().body(response);
     }
 }

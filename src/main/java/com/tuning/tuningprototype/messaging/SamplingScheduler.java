@@ -1,6 +1,8 @@
 package com.tuning.tuningprototype.messaging;
 
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.scheduler.SchedulerClient;
@@ -14,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 public class SamplingScheduler {
+
+    private static final Logger log = LoggerFactory.getLogger(SamplingScheduler.class);
 
     @Value("${SAMPLING_SCHEDULER_QUEUE_ARN}")
     private String SAMPLING_SCHEDULER_QUEUE_ARN;
@@ -55,7 +59,7 @@ public class SamplingScheduler {
                 .build();
 
         CreateScheduleResponse response = _schedulerClient.createSchedule(request);
-        System.out.println("Successfully created scheduled sample with ARN: " + response.scheduleArn());
+        log.info("Successfully created scheduled sample of ARN {} for {}", response.scheduleArn(), message);
         _schedulerClient.close();
     }
 }
