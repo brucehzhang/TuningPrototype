@@ -7,6 +7,7 @@ import com.tuning.tuningprototype.models.mappers.request.AssetSaleRequestMapper;
 import com.tuning.tuningprototype.models.mappers.request.DecisionRequestMapper;
 import com.tuning.tuningprototype.models.mappers.request.PurchaseLotRequestMapper;
 import com.tuning.tuningprototype.models.requests.CreateAssetSaleRequest;
+import com.tuning.tuningprototype.models.requests.CreatePurchaseLotRequest;
 import com.tuning.tuningprototype.models.requests.MakeDecisionsRequest;
 import com.tuning.tuningprototype.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -79,7 +80,10 @@ public class DecisionMakingService {
                     assertHoldable(individualDecision.decisionRequest().sampleId(), individualDecision.decisionRequest().ticker());
             }
             case BUY -> {
-                // TODO:: Validate that we are not spending more money that possible
+                if (individualDecision.purchaseLotRequest() == null) {
+                    throw new IllegalArgumentException("BUY decision requires a purchaseLot request.");
+                }
+                assertAffordable(individualDecision.purchaseLotRequest());
             }
         }
 
@@ -177,6 +181,36 @@ public class DecisionMakingService {
             throw new ExperimentException(
                     "Cannot HOLD %s — no open position exists for this ticker (remaining quantity: %s)"
                             .formatted(ticker, totalRemaining), true);
+        }
+    }
+
+    // Ensures a purchase cannot take its funding wallet below zero.
+    private void assertAffordable(CreatePurchaseLotRequest purchaseRequest) {
+        Wallet wallet = _walletRepository.findById(purchaseRequest.walletId())
+                .orElseThrow(() -> new EntityNotFoundException("Wallet not found: " + purchaseRequest.walletId()));
+
+        BigDecimal purchaseCost = purchaseRequest.purchasePrice()
+                .multiply(purchaseRequest.purchaseQuantity());
+
+        List<PurchaseLot> purchaseLots = _purchaseLotRepository.findByWalletId(wallet.getId());
+
+        BigDecimal totalPurchaseCost = purchaseLots.stream()
+                .map(lot -> lot.getPurchasePrice().multiply(lot.getPurchaseQuantity()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalSaleProceeds = purchaseLots.stream()
+                .flatMap(lot -> _assetSaleRepository.findByPurchaseLotId(lot.getId()).stream())
+                .map(sale -> sale.getSalePrice().multiply(sale.getSaleQuantity()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal availableMoney = wallet.getStartingMoneyAmount()
+                .subtract(totalPurchaseCost)
+                .add(totalSaleProceeds);
+
+        if (purchaseCost.compareTo(availableMoney) > 0) {
+            throw new ExperimentException(
+                    "Cannot spend %s from wallet %d — only %s is available"
+                            .formatted(purchaseCost, wallet.getId(), availableMoney), true);
         }
     }
 }
