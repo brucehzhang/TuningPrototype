@@ -7,6 +7,7 @@ import com.tuning.tuningprototype.models.db.entity.WalletDto;
 import com.tuning.tuningprototype.models.mappers.data.ExperimentFinanceMapper;
 import com.tuning.tuningprototype.services.entity.ExperimentService;
 import com.tuning.tuningprototype.services.entity.WalletService;
+import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +33,11 @@ public class FinancialSummaryService {
      * provided checkTime in epoch seconds. Defaults to now if no time provided.
      *
      * @param experimentId The id of the experiment that we are summarizing the finances for.
-     * @param asOf The point-in-time in epoch seconds that we are checking against.
+     * @param asOf The point-in-time in epoch seconds that we are checking against. Nullable.
      * @return Summarized experiment finances containing current money amounts and active quantities at the point in time.
      */
     @Transactional(propagation = Propagation.SUPPORTS)
-    public ExperimentFinances getExperimentFinancesAt(long experimentId, long asOf) {
+    public ExperimentFinances getExperimentFinancesAt(long experimentId, @Nullable Long asOf) {
         ExperimentDto experiment = _experimentService.getExperiment(experimentId, false)
                 .orElseThrow(() -> new ExperimentException("Could not find experiment by id " + experimentId, true));
         List<WalletDto> walletsAtTime = _walletService.getWalletsByExperiment(experimentId, asOf);

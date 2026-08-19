@@ -11,6 +11,7 @@ import com.tuning.tuningprototype.repositories.AssetSaleRepository;
 import com.tuning.tuningprototype.repositories.PurchaseLotRepository;
 import com.tuning.tuningprototype.repositories.WalletRepository;
 import com.tuning.tuningprototype.services.core.ExperimentStateValidator;
+import jakarta.annotation.Nullable;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -49,7 +50,7 @@ public class WalletService {
      * @return List of Wallet DTOs with the associated purchases and sales at the point in time.
      */
     @Transactional(readOnly = true)
-    public List<WalletDto> getWalletsByExperiment(long experimentId, Long checkTime) {
+    public List<WalletDto> getWalletsByExperiment(long experimentId, @Nullable Long checkTime) {
         if (checkTime == null) {
             // Use Hibernate and hydrate purchase lots.
             return _walletRepository.findWithPurchaseLotsByExperimentId(experimentId).stream()
