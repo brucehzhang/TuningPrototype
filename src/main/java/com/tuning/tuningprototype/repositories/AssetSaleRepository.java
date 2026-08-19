@@ -2,7 +2,10 @@ package com.tuning.tuningprototype.repositories;
 
 import com.tuning.tuningprototype.models.db.entity.AssetSale;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -30,4 +33,11 @@ public interface AssetSaleRepository extends JpaRepository<AssetSale, Long> {
      * All asset sales resulting from a given decision, via the plain FK column.
      */
     List<AssetSale> findBySaleDecisionId(Long decisionId);
+
+    @Query("""
+        SELECT COALESCE(SUM(a.saleQuantity), 0)
+        FROM AssetSale a
+        WHERE a.purchaseLotId = :purchaseLotId
+        """)
+    BigDecimal sumSaleQuantityByPurchaseLotId(@Param("purchaseLotId") Long purchaseLotId);
 }

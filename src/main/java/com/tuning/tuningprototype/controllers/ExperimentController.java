@@ -4,6 +4,7 @@ import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.db.entity.ExperimentDto;
 import com.tuning.tuningprototype.models.requests.*;
 import com.tuning.tuningprototype.models.responses.ErrorResponse;
+import com.tuning.tuningprototype.services.core.DecisionMakingService;
 import com.tuning.tuningprototype.services.core.ExperimentProcessorService;
 import com.tuning.tuningprototype.services.core.FinancialSummaryService;
 import com.tuning.tuningprototype.services.entity.ExperimentService;
@@ -25,13 +26,15 @@ public class ExperimentController {
 
     private static final Logger log = LoggerFactory.getLogger(ExperimentController.class);
 
+    private final DecisionMakingService _decisionMakingService;
     private final ExperimentService _experimentService;
     private final ExperimentProcessorService _experimentProcessorService;
     private final FinancialSummaryService _financialSummaryService;
     private final SampleService _sampleService;
     private final WalletService _walletService;
 
-    public ExperimentController(ExperimentService experimentService, ExperimentProcessorService experimentProcessorService, FinancialSummaryService financialSummaryService, SampleService sampleService, WalletService walletService) {
+    public ExperimentController(DecisionMakingService decisionMakingService, ExperimentService experimentService, ExperimentProcessorService experimentProcessorService, FinancialSummaryService financialSummaryService, SampleService sampleService, WalletService walletService) {
+        _decisionMakingService = decisionMakingService;
         _experimentService = experimentService;
         _experimentProcessorService = experimentProcessorService;
         _financialSummaryService = financialSummaryService;
@@ -99,7 +102,7 @@ public class ExperimentController {
             log.info("Received updateExperiment request: {}", updateExperimentRequest);
             return ResponseEntity.ok(_experimentService.updateExperiment(updateExperimentRequest));
         } catch (Exception e) {
-            String message = "Exception occurred updating experiment: " + e.getMessage();
+            String message = "Exception occurred updating experiment: %s".formatted(e.getMessage());
             return handleException(e, message);
         }
     }
@@ -121,7 +124,7 @@ public class ExperimentController {
             }
             return ResponseEntity.ok(_experimentProcessorService.startSampling(createSampleRequest));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " creating sample: " + e.getMessage();
+            String message = "Exception occurred creating sample for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }
@@ -146,7 +149,7 @@ public class ExperimentController {
             log.info("Received updateSample request for experiment {}: {}", experimentId, updateSampleRequest);
             return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " updating sample: " + e.getMessage();
+            String message = "Exception occurred updating sample for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }
@@ -165,7 +168,7 @@ public class ExperimentController {
             log.info("Received runExperiment request: {}", experimentId);
             return ResponseEntity.ok(_experimentProcessorService.runExperiment(experimentId));
         } catch (Exception e) {
-            String message = "Exception occurred running experiment " + experimentId + ": " + e.getMessage();
+            String message = "Exception occurred running experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }
@@ -189,7 +192,7 @@ public class ExperimentController {
                     .orElseThrow(() -> new ExperimentException("No experiment found for the provided id " + experimentId, true));
             return ResponseEntity.ok(_walletService.createWallet(createWalletRequest, experimentDto));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " creating wallet: " + e.getMessage();
+            String message = "Exception occurred creating wallet for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
 
         }
@@ -214,7 +217,7 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_walletService.getWalletsByExperiment(experimentId, checkTime));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " getting wallets: " + e.getMessage();
+            String message = "Exception occurred getting wallets for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }
@@ -238,7 +241,7 @@ public class ExperimentController {
         try {
             return ResponseEntity.ok(_financialSummaryService.getExperimentFinancesAt(experimentId, checkTime));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " getting summarized finances: " + e.getMessage();
+            String message = "Exception occurred getting summarized finances for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }
@@ -258,7 +261,27 @@ public class ExperimentController {
             log.info("Received updateWallet request for experiment {}: {}", experimentId, updateWalletRequest);
             return ResponseEntity.ok(_walletService.updateStartingWallet(updateWalletRequest, experimentId));
         } catch (Exception e) {
-            String message = "Exception occurred for experiment " + experimentId + " updating wallet: " + e.getMessage();
+            String message = "Exception occurred updating wallet for experiment %s: %s".formatted(experimentId, e.getMessage());
+            return handleException(e, message);
+        }
+    }
+
+    @PostMapping("/{experimentId}/samples/{sampleId}/decisions")
+    @McpTool(description = "Creates decisions and associated asset sales and purchase lots. This should be used as part of" +
+            "the decision-making of the experiment's agent after it has reviewed its strategy, finances, and market analysis." +
+            "All decisions for a sample should be made in one go and should happen while the sample is in DECIDING state.")
+    public ResponseEntity<?> makeDecisions(
+            @McpToolParam(description = "The id of the experiment that we are making decisions for.")
+            @PathVariable("experimentId") long experimentId,
+            @McpToolParam(description = "The id of the sample that the decisions will be made under.")
+            @PathVariable("sampleId") long sampleId,
+            @McpToolParam(description = "The decisions and associated purchases/sales that are being made in this sampling round.")
+            @RequestBody MakeDecisionsRequest makeDecisionsRequest) {
+        try {
+            log.info("Received makeDecisions request for experiment {} sample {}: {}", experimentId, sampleId, makeDecisionsRequest);
+            return ResponseEntity.ok(_decisionMakingService.makeDecisions(makeDecisionsRequest, sampleId));
+        } catch (Exception e) {
+            String message = "Exception occurred making decisions for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);
         }
     }

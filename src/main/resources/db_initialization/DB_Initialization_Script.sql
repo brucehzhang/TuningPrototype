@@ -27,7 +27,7 @@ CREATE TABLE users (
                        first_name VARCHAR(50) NOT NULL,
                        middle_name VARCHAR(50),
                        last_name VARCHAR(50),
-                       account_id BIGINT UNSIGNED NOT NULL,
+                       account_id BIGINT UNSIGNED,
                        license_type VARCHAR(50) NOT NULL,
                        created_time DATETIME NOT NULL,
                        modified_time DATETIME NOT NULL,

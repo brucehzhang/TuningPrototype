@@ -37,4 +37,6 @@ public interface PurchaseLotRepository extends JpaRepository<PurchaseLot, Long> 
      * All purchase lots resulting from a given decision, via the plain FK column.
      */
     List<PurchaseLot> findByPurchaseDecisionId(Long decisionId);
+
+    List<PurchaseLot> findByWalletIdInAndTicker(Collection<Long> walletIds, String ticker);
 }

@@ -2,8 +2,46 @@ package com.tuning.tuningprototype.models.mappers.data.entity;
 
 import com.tuning.tuningprototype.models.db.entity.Sample;
 import com.tuning.tuningprototype.models.db.entity.SampleDto;
+import org.hibernate.Hibernate;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
-public interface SampleMapper {
-    SampleDto toDto(Sample sample);
-    Sample toEntity(SampleDto dto);
+@Component
+public class SampleMapper {
+
+    private final DecisionMapper _decisionMapper;
+
+    public SampleMapper(@Lazy DecisionMapper decisionMapper) {
+        _decisionMapper = decisionMapper;
+    }
+
+    public SampleDto toDto(Sample sample) {
+        if (sample == null) return null;
+
+        return new SampleDto(
+                sample.getId(),
+                sample.getExperimentId(),
+                sample.getMarketInsights(),
+                sample.getSamplingTime(),
+                sample.getSamplingStatus(),
+                sample.getCreatedTime(),
+                sample.getModifiedTime(),
+                Hibernate.isInitialized(sample.getDecisions())
+                        ? sample.getDecisions().stream().map(_decisionMapper::toDto).toList() : null
+        );
+    }
+
+    public Sample toEntity(SampleDto dto) {
+        if (dto == null) return null;
+
+        return Sample.builder()
+                .id(dto.id())
+                .experimentId(dto.experimentId())
+                .marketInsights(dto.marketInsights())
+                .samplingTime(dto.samplingTime())
+                .samplingStatus(dto.samplingStatus())
+                .createdTime(dto.createdTime())
+                .modifiedTime(dto.modifiedTime())
+                .build();
+    }
 }
