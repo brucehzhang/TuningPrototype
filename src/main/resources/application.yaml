@@ -33,7 +33,7 @@ server:
 
 app:
   datasource:
-    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&useSSL=true&sslMode=VERIFY_CA
+    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&ssl=true&sslmode=verify-full&sslrootcert=/certs/global-bundle.pem
     username: ${STRATEGY_TUNING_DB_ADMIN_USER}
     password: ${STRATEGY_TUNING_DB_ADMIN_PASS}
     configuration:

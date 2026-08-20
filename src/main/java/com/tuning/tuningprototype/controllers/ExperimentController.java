@@ -43,22 +43,6 @@ public class ExperimentController {
     }
 
     /**
-     * Heartbeat for application.
-     *
-     * @return 200 indicating that application is alive.
-     */
-    @GetMapping("/health")
-    public ResponseEntity<?> health() {
-        try {
-            return ResponseEntity.ok().body("Service is online");
-        } catch (Exception e) {
-            String message = String.format("Experiments Internal Error: %s", e.getMessage());
-            log.error(message);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
-        }
-    }
-
-    /**
      * Gets an experiment by the id.
      *
      * @param id - id of the experiment
