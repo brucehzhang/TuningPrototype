@@ -1,0 +1,36 @@
+# Build outputs (rebuilt inside the container)
+build/
+out/
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Version control
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files themselves (no need to copy into build context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+
+# Secrets / local env files — never bake these into an image
+.env
+.env.*
+*.pem
+# Only the public pem files in the /cert directory of this project can be built into the image
+!certs/*.pem
+
+# Test reports
+build/reports/
+build/test-results/

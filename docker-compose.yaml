@@ -13,4 +13,4 @@ services:
       - SCHEDULER_EXECUTION_ROLE_ARN
       - AWS_REGION
     volumes:
-      - ~/.aws:/root/.aws:ro
+      - ~/.aws:/root/.aws
