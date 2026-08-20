@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    image: myapp:1.0
+    ports:
+      - "8080:8080"
+    environment:
+      - STRATEGY_TUNING_DB_ADMIN_USER
+      - STRATEGY_TUNING_DB_ADMIN_PASS
+      - APCA_TRADING_KEY_ID
+      - APCA_TRADING_SECRET_KEY
+      - SAMPLING_SCHEDULER_QUEUE_ARN
+      - SCHEDULER_EXECUTION_ROLE_ARN
+      - AWS_REGION
+    volumes:
+      - ~/.aws:/root/.aws:ro
