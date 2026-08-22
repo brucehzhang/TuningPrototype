@@ -77,8 +77,8 @@ jobs:
               'mkdir -p /home/ec2-user/app',
               'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}',
               'sed \"s|IMAGE_TAG_PLACEHOLDER|${{ github.sha }}|\" /home/ec2-user/app/docker-compose.template.yaml > /home/ec2-user/app/docker-compose.yaml',
-              'cd /home/ec2-user/app && docker compose pull',
-              'cd /home/ec2-user/app && docker compose up -d',
+              'cd /home/ec2-user/app && docker-compose pull',
+              'cd /home/ec2-user/app && docker-compose up -d',
               'sleep 10',
               'curl -f http://localhost:8080/actuator/health || exit 1'
             ]" \
