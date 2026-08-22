@@ -1,0 +1,5 @@
+# docker-compose override is only used with local development.
+services:
+  app:
+    volumes:
+      - ~/.aws:/root/.aws
