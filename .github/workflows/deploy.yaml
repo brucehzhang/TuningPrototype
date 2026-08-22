@@ -1,4 +1,4 @@
-name: Build and Push to ECR
+name: Build and Deploy
 
 on:
   push:
@@ -11,10 +11,15 @@ permissions:
 env:
   AWS_REGION: ap-southeast-2
   ECR_REPOSITORY: 22ng/tuningprototype
+  ECR_REGISTRY: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com
+  TARGET_TAG_KEY: Application
+  TARGET_TAG_VALUE: tuningprototype   # every EC2 instance running this app must be tagged Application=tuningprototype
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,15 +31,91 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+      - name: Build and push image (SHA-tagged only, no :latest)
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::102001485020:role/github-actions-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy via SSM (fans out to all tagged instances)
+        run: |
+          set -e
+
+          # Discover every instance currently matching the tag, so we know
+          # exactly which instances we're waiting on below.
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --filters "Name=tag:${{ env.TARGET_TAG_KEY }},Values=${{ env.TARGET_TAG_VALUE }}" \
+                      "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+
+          if [ -z "$INSTANCE_IDS" ]; then
+            echo "No running instances found with tag ${{ env.TARGET_TAG_KEY }}=${{ env.TARGET_TAG_VALUE }}"
+            exit 1
+          fi
+
+          echo "Deploying to instances: $INSTANCE_IDS"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --targets "Key=tag:${{ env.TARGET_TAG_KEY }},Values=${{ env.TARGET_TAG_VALUE }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands="[
+              'mkdir -p /home/ec2-user/app',
+              'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}',
+              'sed \"s|IMAGE_TAG_PLACEHOLDER|${{ github.sha }}|\" /home/ec2-user/app/docker-compose.template.yaml > /home/ec2-user/app/docker-compose.yaml',
+              'cd /home/ec2-user/app && docker compose pull',
+              'cd /home/ec2-user/app && docker compose up -d',
+              'sleep 10',
+              'curl -f http://localhost:8080/actuator/health || exit 1'
+            ]" \
+            --query 'Command.CommandId' --output text)
+
+          echo "Command ID: $COMMAND_ID"
+
+          # Wait for and check each instance individually — send-command with
+          # --targets doesn't support a single combined "wait", so we poll
+          # per instance and fail the whole job if any one of them fails.
+          OVERALL_STATUS=0
+          for INSTANCE_ID in $INSTANCE_IDS; do
+            echo "Waiting on $INSTANCE_ID..."
+            aws ssm wait command-executed \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID" || true
+
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID" \
+              --query 'Status' --output text)
+
+            echo "$INSTANCE_ID -> $STATUS"
+
+            if [ "$STATUS" != "Success" ]; then
+              echo "Deployment failed on $INSTANCE_ID"
+              aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id "$INSTANCE_ID" \
+                --query 'StandardErrorContent' --output text
+              OVERALL_STATUS=1
+            fi
+          done
+
+          if [ "$OVERALL_STATUS" -ne 0 ]; then
+            echo "One or more instances failed to deploy — see logs above."
+            exit 1
+          fi
+
+          echo "Deployment succeeded and health check passed on all instances."

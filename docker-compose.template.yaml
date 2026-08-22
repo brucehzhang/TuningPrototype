@@ -1,0 +1,14 @@
+services:
+  app:
+    image: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com/22ng/tuningprototype:IMAGE_TAG_PLACEHOLDER
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - STRATEGY_TUNING_DB_ADMIN_USER
+      - STRATEGY_TUNING_DB_ADMIN_PASS
+      - APCA_TRADING_KEY_ID
+      - APCA_TRADING_SECRET_KEY
+      - SAMPLING_SCHEDULER_QUEUE_ARN
+      - SCHEDULER_EXECUTION_ROLE_ARN
+      - AWS_REGION
