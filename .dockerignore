@@ -12,6 +12,9 @@ out/
 .git/
 .gitignore
 
+# Ignore override file for local
+docker-compose.override.yaml
+
 # OS files
 .DS_Store
 Thumbs.db

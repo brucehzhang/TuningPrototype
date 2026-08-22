@@ -1,7 +1,8 @@
 services:
   app:
+    image: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com/tuningprototype:latest
     build: .
-    image: myapp:1.0
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
@@ -12,5 +13,3 @@ services:
       - SAMPLING_SCHEDULER_QUEUE_ARN
       - SCHEDULER_EXECUTION_ROLE_ARN
       - AWS_REGION
-    volumes:
-      - ~/.aws:/root/.aws
