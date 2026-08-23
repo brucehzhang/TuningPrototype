@@ -1,9 +1,10 @@
 spring:
   application:
     name: TuningPrototype
-#  cloud:
-#    aws:
-#      credentials:
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION}
 #        profile:
 #    Not needed since EC2/EKS instances should read from IAM role, uncomment if static properties are needed
 #          name: default
