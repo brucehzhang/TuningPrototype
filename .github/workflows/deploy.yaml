@@ -10,8 +10,6 @@ permissions:
 
 env:
   AWS_REGION: ap-southeast-2
-  SAMPLING_SCHEDULER_QUEUE_ARN: arn:aws:sqs:ap-southeast-2:102001485020:sampling_scheduler_queue
-  SCHEDULER_EXECUTION_ROLE_ARN: arn:aws:iam::102001485020:role/SchedulerExecutionRole
   ECR_REPOSITORY: 22ng/tuningprototype
   ECR_REGISTRY: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com
   TARGET_TAG_KEY: Application
@@ -72,17 +70,22 @@ jobs:
 
           echo "Deploying to instances: $INSTANCE_IDS"
 
+          # Bake this run's image tag into the script, then base64-encode the
+          # whole thing so it crosses the YAML/JSON boundary as a single opaque
+          # string — no nested quoting to fight.
+          sed "s|__IMAGE_TAG__|${{ github.sha }}|" scripts/remote-deploy.sh > /tmp/remote-deploy-resolved.sh
+          ENCODED_SCRIPT=$(base64 -w 0 /tmp/remote-deploy-resolved.sh)
+
+          cat > /tmp/ssm-params.json << EOF
+          {
+            "commands": ["echo ${ENCODED_SCRIPT} | base64 -d | bash"]
+          }
+          EOF
+
           COMMAND_ID=$(aws ssm send-command \
             --targets "Key=tag:${{ env.TARGET_TAG_KEY }},Values=${{ env.TARGET_TAG_VALUE }}" \
             --document-name "AWS-RunShellScript" \
-            --parameters commands="[
-              'mkdir -p /home/ec2-user/app',
-              'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}',
-              'sed \"s|IMAGE_TAG_PLACEHOLDER|${{ github.sha }}|\" /home/ec2-user/app/docker-compose.template.yaml > /home/ec2-user/app/docker-compose.yaml',
-              'cd /home/ec2-user/app && docker-compose pull',
-              'export $(aws secretsmanager get-secret-value --secret-id tuning_server_secrets --region ${{ env.AWS_REGION }} --query SecretString --output text | jq -r \"to_entries|map(\\\"\\(.key)=\\(.value)\\\")|.[]\") && cd /home/ec2-user/app && docker compose up -d',
-              'for i in {1..10}; do curl -f http://localhost:8080/actuator/health && break; echo "Attempt $i failed, retrying..."; sleep 5; done'
-            ]" \
+            --parameters file:///tmp/ssm-params.json \
             --query 'Command.CommandId' --output text)
 
           echo "Command ID: $COMMAND_ID"
