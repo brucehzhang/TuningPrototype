@@ -2,18 +2,20 @@ spring:
   application:
     name: TuningPrototype
 #  cloud:
-#    TODO:: Figure out what we need for EKS, definitely not static keys
 #    aws:
 #      credentials:
-#        access-key: ${AWS_ACCESS_KEY_ID}
-#        secret-key: ${AWS_SECRET_ACCESS_KEY}
-#
-#   Temporarily disable this because kinesis is not on free tier. Using SQS instead.
-#    stream:
-#      bindings:
-#        # <identifier>-<in/out>-<index>
-#        publishSamplingAgentEvent-out-0:
-#          destination: sampling_agent_event_stream
+#        profile:
+#    Not needed since EC2/EKS instances should read from IAM role, uncomment if static properties are needed
+#          name: default
+#          access-key: ${AWS_ACCESS_KEY_ID}
+#          secret-key: ${AWS_SECRET_ACCESS_KEY}
+  #
+  #   Temporarily disable this because kinesis is not on free tier. Using SQS instead.
+  #    stream:
+  #      bindings:
+  #        # <identifier>-<in/out>-<index>
+  #        publishSamplingAgentEvent-out-0:
+  #          destination: sampling_agent_event_stream
   jpa:
     hibernate:
       ddl-auto: validate
@@ -31,7 +33,7 @@ server:
 
 app:
   datasource:
-    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&useSSL=truessl=true&sslmode=verify-full&sslrootcert=/app/certs/global-bundle.pem
+    url: jdbc:mysql://strategy-tuning-db-instance.cv26muqooyrk.ap-southeast-2.rds.amazonaws.com:3306/strategy_tuning_db?serverTimezone=UTC&ssl=true&sslmode=verify-full&sslrootcert=/certs/global-bundle.pem
     username: ${STRATEGY_TUNING_DB_ADMIN_USER}
     password: ${STRATEGY_TUNING_DB_ADMIN_PASS}
     configuration:
