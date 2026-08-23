@@ -21,7 +21,8 @@ Ensure your environment has the following variables:
     - SCHEDULER_EXECUTION_ROLE_ARN
     - AWS_REGION
 
-Make sure Docker installed so docker-compose can be used to create and run the image and container. 
+Make sure Docker and Docker Compose are installed so docker-compose can be used to create and run the image and container. 
+Local override YAML file uses local AWS credentials.
 
 Use AWS CLI v2 before running to make sure session is refreshed: aws login
 
