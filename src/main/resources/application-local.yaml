@@ -16,6 +16,8 @@ spring:
 #        # <identifier>-<in/out>-<index>
 #        publishSamplingAgentEvent-out-0:
 #          destination: sampling_agent_event_stream
+  config:
+    import: "aws-secretsmanager:tuning_server_secrets"
   jpa:
     hibernate:
       ddl-auto: validate
