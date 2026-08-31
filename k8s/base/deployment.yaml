@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuningprototype
+  labels:
+    app: tuningprototype
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tuningprototype
+  template:
+    metadata:
+      labels:
+        app: tuningprototype
+    spec:
+      serviceAccountName: tuningprototype
+      containers:
+        - name: tuningprototype
+          image: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com/22ng/tuningprototype:__IMAGE_TAG__
+          ports:
+            - containerPort: 8080
+          env: []
+          envFrom:
+            - secretRef:
+                name: tuningprototype-db-secret
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "768Mi"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: tuningprototype-secrets
