@@ -26,11 +26,11 @@ spec:
                 name: tuningprototype-db-secret
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "100m"
+              memory: "200Mi"
             limits:
-              cpu: "500m"
-              memory: "768Mi"
+              cpu: "300m"
+              memory: "300Mi"
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
