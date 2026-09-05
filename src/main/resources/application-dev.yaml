@@ -30,6 +30,8 @@ spring:
     mcp:
       server:
         protocol: STREAMABLE
+        streamable-http:
+          keep-alive-interval: 30s
 
 server:
   port: 8080
