@@ -1,0 +1,64 @@
+#name: Build and Deploy to EKS
+#
+#on:
+#  push:
+#    branches: [main]
+#
+#permissions:
+#  id-token: write   # required for OIDC
+#  contents: read
+#
+#env:
+#  AWS_REGION: ap-southeast-2
+#  ECR_REPOSITORY: 22ng/tuningprototype
+#  ECR_REGISTRY: 102001485020.dkr.ecr.ap-southeast-2.amazonaws.com
+#
+#jobs:
+#  build-and-push:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Configure AWS credentials via OIDC
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          role-to-assume: arn:aws:iam::102001485020:role/github-actions-ecr-push
+#          aws-region: ${{ env.AWS_REGION }}
+#
+#      - name: Login to Amazon ECR
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      - name: Build and push image (SHA-tagged only, no :latest)
+#        run: |
+#          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+#          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+#
+#  deploy-eks:
+#    needs: build-and-push
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Configure AWS credentials via OIDC
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          role-to-assume: arn:aws:iam::102001485020:role/github-actions-eks-deploy
+#          aws-region: ${{ env.AWS_REGION }}
+#
+#      - name: Set up kubectl
+#        uses: azure/setup-kubectl@v4
+#
+#      - name: Update kubeconfig
+#        run: aws eks update-kubeconfig --name strategy-tuning-eks --region ${{ env.AWS_REGION }}
+#
+#      - name: Substitute image tag
+#        run: |
+#          sed -i "s|__IMAGE_TAG__|${{ github.sha }}|" k8s/base/deployment.yaml
+#
+#      - name: Deploy via Kustomize
+#        run: kubectl apply -k k8s/overlays/dev
+#
+#      - name: Verify rollout
+#        run: kubectl rollout status deployment/tuningprototype --timeout=180s
