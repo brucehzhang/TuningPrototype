@@ -2,8 +2,11 @@ package com.tuning.tuningprototype.controllers;
 
 import com.tuning.tuningprototype.exceptions.ExperimentException;
 import com.tuning.tuningprototype.models.db.entity.ExperimentDto;
+import com.tuning.tuningprototype.models.db.entity.SampleDto;
+import com.tuning.tuningprototype.models.enums.SamplingStatus;
 import com.tuning.tuningprototype.models.requests.*;
 import com.tuning.tuningprototype.models.responses.ErrorResponse;
+import com.tuning.tuningprototype.models.responses.SamplingResponse;
 import com.tuning.tuningprototype.services.core.DecisionMakingService;
 import com.tuning.tuningprototype.services.core.ExperimentProcessorService;
 import com.tuning.tuningprototype.services.core.FinancialSummaryService;
@@ -19,6 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping(value = "/experiments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,14 +119,17 @@ public class ExperimentController {
     }
 
     /**
-     * Updates a sample with the provided body, used for storing analyzed market data into market insights and modifying the state of the sample.
+     * Updates a sample with the provided body, used for storing analyzed market data into market insights and modifying
+     * the state of the sample. If updated to COMPLETED, will trigger the next Sample if the next sample is within the
+     * experiment's end time.
      *
      * @param experimentId The id of the experiment that the sample will belong to, used for validation and REST pathing.
      * @param updateSampleRequest The request body containing details to update the sample with
-     * @return The DTO of the updated sample, or 500 with the error
+     * @return The DTO of the updated sample + optionally created next sample DTO, or 500 with the error
      */
     @PatchMapping("/{experimentId}/samples")
-    @McpTool(description = "Updates the sample with the market insights and sets sample state to DECIDING/COMPLETED/FAILED")
+    @McpTool(description = "Updates the sample with the market insights and sets sample state to DECIDING/COMPLETED/FAILED. If marking to COMPLETED, " +
+            "will trigger the next Sample if the next sampling time is within the experiment's end time.")
     public ResponseEntity<?> updateSample(
             @McpToolParam(description = "The id of the experiment that the sample belongs to.")
             @PathVariable("experimentId") long experimentId,
@@ -131,7 +139,14 @@ public class ExperimentController {
             @RequestBody UpdateSampleRequest updateSampleRequest) {
         try {
             log.info("Received updateSample request for experiment {}: {}", experimentId, updateSampleRequest);
-            return ResponseEntity.ok(_sampleService.updateSample(updateSampleRequest, experimentId));
+            SampleDto sampleDto = _sampleService.updateSample(updateSampleRequest, experimentId);
+            Optional<SampleDto> optCreatedSample = Optional.empty();
+            if (SamplingStatus.COMPLETED.equals(updateSampleRequest.samplingStatus())) {
+                log.info("Sample {} was updated to COMPLETED, checking if next Sample is necessary.", sampleDto.id());
+                // TODO:: Review this, probably want to wrap in transaction together with updating the Sample.
+                optCreatedSample = _experimentProcessorService.continueSampling(experimentId, sampleDto);
+            }
+            return ResponseEntity.ok(new SamplingResponse(sampleDto, optCreatedSample.orElse(null)));
         } catch (Exception e) {
             String message = "Exception occurred updating sample for experiment %s: %s".formatted(experimentId, e.getMessage());
             return handleException(e, message);

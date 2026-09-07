@@ -10,6 +10,7 @@ import com.tuning.tuningprototype.models.db.entity.ExperimentDto;
 import com.tuning.tuningprototype.models.db.entity.SampleDto;
 import com.tuning.tuningprototype.models.enums.ExperimentStatus;
 import com.tuning.tuningprototype.models.enums.SamplingStatus;
+import com.tuning.tuningprototype.models.enums.SamplingWindow;
 import com.tuning.tuningprototype.models.events.SamplingAgentEvent;
 import com.tuning.tuningprototype.models.mappers.data.entity.ExperimentMapper;
 import com.tuning.tuningprototype.models.requests.CreateSampleRequest;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 // Processor service used for facilitation Experiment executions (start, sampling, end)
 @Service
@@ -102,6 +104,7 @@ public class ExperimentProcessorService {
                 createdSample.id(),
                 createdSample.samplingTime(),
                 finances);
+        // TODO:: Consider transactional outbox if scaling and failure handling is necessary (if this actually makes it somewhere lol)
         try {
             log.info("Publishing sampling agent event: {}", event);
             _samplingAgentEventPublisher.publishSamplingAgentEvent(event);
@@ -111,6 +114,46 @@ public class ExperimentProcessorService {
             _sampleService.updateSample(new UpdateSampleRequest(createdSample.id(), null, SamplingStatus.FAILED), experiment.getId());
         }
         return createdSample;
+    }
+
+    /**
+     * Checks if experiment needs to continue sampling, then creates a sample in the DB and send message for agent
+     * consumers to begin decision-making.
+     *
+     * @param experimentId The id of the experiment that is being potentially continued
+     * @param previousSample The previously created Sample, used to check if we need to continue
+     * @return Optionally created dto of the created sample
+     */
+    public Optional<SampleDto> continueSampling(long experimentId, SampleDto previousSample) {
+        Experiment experiment = _experimentRepository.findById(experimentId)
+                .orElseThrow();
+        SamplingWindow window = experiment.getSamplingWindow();
+        long nextSampleTime = previousSample.samplingTime() + window.intervalLength;
+        if (experiment.getExperimentEndTime() < nextSampleTime) {
+            log.info("Sampling time {} is after experiment's end time of {}, no further sampling needs to be done.",
+                    nextSampleTime, experiment.getExperimentEndTime());
+            return Optional.empty();
+        }
+        CreateSampleRequest createSampleRequest = new CreateSampleRequest(experimentId, null, nextSampleTime);
+        SampleDto createdSample = _sampleService.createSample(createSampleRequest);
+        ExperimentFinances finances = _financialSummaryService.getExperimentFinancesAt(createdSample.experimentId(), createSampleRequest.samplingTime());
+        SamplingAgentEvent event = new SamplingAgentEvent(experiment.getId(),
+                experiment.getStrategyPrompt(),
+                experiment.getAgentModel(),
+                experiment.getSamplingWindow(),
+                createdSample.id(),
+                createdSample.samplingTime(),
+                finances);
+        // TODO:: Consider transactional outbox if scaling and failure handling is necessary (if this actually makes it somewhere lol)
+        try {
+            log.info("Publishing next sampling agent event: {}", event);
+            _samplingAgentEventPublisher.publishSamplingAgentEvent(event);
+            log.info("Sampling agent event delivered for next sample {}", createdSample.id());
+        } catch (Exception e) {
+            log.error("Sampling agent event could not be delivered for next sample {}", createdSample.id());
+            _sampleService.updateSample(new UpdateSampleRequest(createdSample.id(), null, SamplingStatus.FAILED), experiment.getId());
+        }
+        return Optional.of(createdSample);
     }
 
     /**
