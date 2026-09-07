@@ -130,8 +130,9 @@ public class ExperimentProcessorService {
         SamplingWindow window = experiment.getSamplingWindow();
         long nextSampleTime = previousSample.samplingTime() + window.intervalLength;
         if (experiment.getExperimentEndTime() < nextSampleTime) {
-            log.info("Sampling time {} is after experiment's end time of {}, no further sampling needs to be done.",
-                    nextSampleTime, experiment.getExperimentEndTime());
+            log.info("Sampling time {} is after experiment's end time of {}, no further sampling needed. Ending experiment {}.",
+                    nextSampleTime, experiment.getExperimentEndTime(), experimentId);
+            endExperiment(experimentId);
             return Optional.empty();
         }
         CreateSampleRequest createSampleRequest = new CreateSampleRequest(experimentId, null, nextSampleTime);
@@ -164,8 +165,10 @@ public class ExperimentProcessorService {
      * @return The dto of the experiment that has ended.
      */
     public ExperimentDto endExperiment(long experimentId) {
-        // TODO:: Implement this
-        log.warn("NO-OP");
-        return null;
+        Experiment experiment = _experimentRepository.findById(experimentId).orElseThrow();
+        experiment.setExperimentStatus(ExperimentStatus.COMPLETED);
+        experiment = _experimentRepository.save(experiment);
+        // TODO:: Do other completion actions here
+        return _experimentMapper.toDto(experiment);
     }
 }
