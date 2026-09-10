@@ -25,4 +25,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * All users belonging to a given account, via the plain FK column.
      */
     List<User> findByAccountId(Long accountId);
+
+    /**
+     * Looks up a user by username or email, used to authenticate a log in attempt.
+     */
+    Optional<User> findByUsernameOrEmail(String username, String email);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }
