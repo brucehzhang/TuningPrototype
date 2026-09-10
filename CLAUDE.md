@@ -1,5 +1,8 @@
+<!-- BEGIN AWS Agent Toolkit rules -->
 # AWS Guidance
 
+- Where these AWS rules conflict with the project's own instructions, the
+  project's instructions take precedence.
 - Prefer the AWS MCP Server for AWS interactions — it provides sandboxed
   execution, observability, and audit logging. If unavailable, use the
   AWS CLI directly.
@@ -24,3 +27,4 @@
   NOT hit the Secrets Manager Agent daemon directly. MUST use
   `{{resolve:secretsmanager:secret-id:SecretString:json-key}}` with
   `asm-exec` so the secret resolves at runtime without entering context.
+<!-- END AWS Agent Toolkit rules -->
