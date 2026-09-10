@@ -62,9 +62,9 @@ public class User {
     private String passwordHash;
 
     /**
-     * The id of the account this user belongs to.
+     * The id of the account this user belongs to. Null for personal use with no account/company.
      */
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id")
     private Long accountId;
 
     /**
