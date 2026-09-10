@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS decisions;
 DROP TABLE IF EXISTS wallet;
 DROP TABLE IF EXISTS samples;
 DROP TABLE IF EXISTS experiments;
+DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS users;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -27,13 +28,34 @@ CREATE TABLE users (
                        first_name VARCHAR(50) NOT NULL,
                        middle_name VARCHAR(50),
                        last_name VARCHAR(50),
+                       username VARCHAR(50) NOT NULL,
+                       email VARCHAR(255) NOT NULL,
+                       password_hash VARCHAR(255) NOT NULL,
                        account_id BIGINT UNSIGNED,
                        license_type VARCHAR(50) NOT NULL,
                        created_time DATETIME NOT NULL,
                        modified_time DATETIME NOT NULL,
                        PRIMARY KEY (id),
                        CONSTRAINT fk_users_accounts
-                           FOREIGN KEY (account_id) REFERENCES accounts (id)
+                           FOREIGN KEY (account_id) REFERENCES accounts (id),
+                       CONSTRAINT uq_users_username
+                           UNIQUE (username),
+                       CONSTRAINT uq_users_email
+                           UNIQUE (email)
+) ENGINE = InnoDB;
+
+CREATE TABLE sessions (
+                          id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                          user_id BIGINT UNSIGNED NOT NULL,
+                          session_token VARCHAR(255) NOT NULL,
+                          created_time DATETIME NOT NULL,
+                          expires_time DATETIME NOT NULL,
+                          modified_time DATETIME NOT NULL,
+                          PRIMARY KEY (id),
+                          CONSTRAINT fk_sessions_users
+                              FOREIGN KEY (user_id) REFERENCES users (id),
+                          CONSTRAINT uq_sessions_session_token
+                              UNIQUE (session_token)
 ) ENGINE = InnoDB;
 
 CREATE TABLE experiments (

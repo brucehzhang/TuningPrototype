@@ -30,6 +30,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
+    // Password hashing (BCrypt) for user authentication
+    implementation 'org.springframework.security:spring-security-crypto'
     // Spring Cloud AWS
     implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}")
     // Add further AWS starter or BOM dependencies here

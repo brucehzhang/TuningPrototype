@@ -23,6 +23,9 @@ public class UserMapper {
                 user.getFirstName(),
                 user.getMiddleName(),
                 user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPasswordHash(),
                 user.getAccountId(),
                 user.getLicenseType(),
                 user.getCreatedTime(),
@@ -40,6 +43,9 @@ public class UserMapper {
                 .firstName(dto.firstName())
                 .middleName(dto.middleName())
                 .lastName(dto.lastName())
+                .username(dto.username())
+                .email(dto.email())
+                .passwordHash(dto.passwordHash())
                 .accountId(dto.accountId())
                 .licenseType(dto.licenseType())
                 .createdTime(dto.createdTime())
