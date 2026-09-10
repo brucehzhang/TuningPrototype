@@ -1,7 +1,8 @@
 -- ============================================================================
 -- Seed script for tuning_prototype test data
 -- Insert order respects FK dependencies (parents before children):
---   accounts -> users -> experiments -> samples -> wallets
+--   accounts -> users -> sessions
+--                     -> experiments -> samples -> wallets
 --   -> decisions -> purchase_lots -> asset_sales
 --
 -- Enum values below are confirmed against the actual AgentModel, ExperimentStatus,
@@ -17,6 +18,7 @@ DELETE FROM decisions;
 DELETE FROM wallets;
 DELETE FROM samples;
 DELETE FROM experiments;
+DELETE FROM sessions;
 DELETE FROM users;
 DELETE FROM accounts;
 
@@ -31,11 +33,21 @@ INSERT INTO accounts (id, name, created_time, modified_time) VALUES
 
 -- ============================================================================
 -- USERS
+-- password_hash values below are placeholder strings only (NOT real bcrypt
+-- hashes) — they exist purely to satisfy the NOT NULL column for seed data.
 -- ============================================================================
-INSERT INTO users (id, first_name, middle_name, last_name, account_id, license_type, created_time, modified_time) VALUES
-                                                                                                                  (1, 'Jane',  NULL,   'Doe',     1, 'ENTERPRISE', '2026-01-01 09:05:00', '2026-01-01 09:05:00'),
-                                                                                                                  (2, 'Sam',   'R.',   'Nguyen',  1, 'PREMIUM',    '2026-01-02 10:00:00', '2026-01-02 10:00:00'),
-                                                                                                                  (3, 'Alex',  NULL,   NULL,      2, 'FREE',       '2026-01-05 09:10:00', '2026-01-05 09:10:00');
+INSERT INTO users (id, first_name, middle_name, last_name, username, email, password_hash, account_id, license_type, created_time, modified_time) VALUES
+                                                                                                                  (1, 'Jane',  NULL,   'Doe',     'jane.doe',    'jane.doe@example.com',    '$2b$10$DUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUM01', 1, 'ENTERPRISE', '2026-01-01 09:05:00', '2026-01-01 09:05:00'),
+                                                                                                                  (2, 'Sam',   'R.',   'Nguyen',  'sam.nguyen',  'sam.nguyen@example.com',  '$2b$10$DUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUM02', 1, 'PREMIUM',    '2026-01-02 10:00:00', '2026-01-02 10:00:00'),
+                                                                                                                  (3, 'Alex',  NULL,   NULL,      'alex',        'alex@example.com',        '$2b$10$DUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUM03', 2, 'FREE',       '2026-01-05 09:10:00', '2026-01-05 09:10:00');
+
+-- ============================================================================
+-- SESSIONS
+-- session_token values below are placeholder strings only, not real tokens.
+-- ============================================================================
+INSERT INTO sessions (id, user_id, session_token, created_time, expires_time, modified_time) VALUES
+                                                                                                   (1, 1, 'sess_tok_placeholder_0000000000000000000000000001', '2026-01-06 08:00:00', '2026-01-13 08:00:00', '2026-01-06 08:00:00'),
+                                                                                                   (2, 2, 'sess_tok_placeholder_0000000000000000000000000002', '2026-01-06 09:15:00', '2026-01-13 09:15:00', '2026-01-06 09:15:00');
 
 -- ============================================================================
 -- EXPERIMENTS
@@ -114,6 +126,7 @@ INSERT INTO asset_sales (id, sale_decision_id, purchase_lot_id, ticker, sale_pri
 -- ============================================================================
 -- SELECT * FROM accounts;
 -- SELECT * FROM users;
+-- SELECT * FROM sessions;
 -- SELECT * FROM experiments;
 -- SELECT * FROM samples;
 -- SELECT * FROM wallets;

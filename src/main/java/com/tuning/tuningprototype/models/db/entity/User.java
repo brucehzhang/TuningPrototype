@@ -44,6 +44,24 @@ public class User {
     private String lastName;
 
     /**
+     * Unique username used to identify and log in the user.
+     */
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
+
+    /**
+     * Unique email address of the user.
+     */
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
+
+    /**
+     * Bcrypt hash of the user's password. Never the plaintext password.
+     */
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
+    /**
      * The id of the account this user belongs to.
      */
     @Column(name = "account_id", nullable = false)
