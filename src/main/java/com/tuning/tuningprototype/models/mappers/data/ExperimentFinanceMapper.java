@@ -92,7 +92,8 @@ public class ExperimentFinanceMapper {
     }
 
     private BigDecimal saleProceeds(AssetSaleDto sale) {
-        return sale.salePrice().multiply(sale.saleQuantity());
+        BigDecimal saleQuantity = sale.saleQuantity() == null ? BigDecimal.ZERO : sale.saleQuantity();
+        return sale.salePrice().multiply(saleQuantity);
     }
 
     private List<AssetSaleDto> safeAssetSales(PurchaseLotDto lot) {
