@@ -10,10 +10,14 @@ import com.tuning.tuningprototype.models.requests.CreateExperimentRequest;
 import com.tuning.tuningprototype.models.requests.UpdateExperimentRequest;
 import com.tuning.tuningprototype.repositories.ExperimentRepository;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -49,6 +53,18 @@ public class ExperimentService {
                     .map(_experimentMapper::toDto);
         }
         return _experimentRepository.findById(id).map(_experimentMapper::toDto);
+    }
+
+    /**
+     * Gets all experiments owned by the user, done via Pageable to control pagination.
+     *
+     * @param userId The id of the user used to get the experiments
+     * @param pageable The pageable containing the page number, size, and sorting used
+     * @return The page of experiment DTOs owned by the user
+     */
+    public Page<ExperimentDto> getExperimentsByUser(long userId, Pageable pageable) {
+        return _experimentRepository.findByCreatedUserId(userId, pageable).map(_experimentMapper::toDto);
+
     }
 
     // Used for completely hydrating an experiment on gets and create

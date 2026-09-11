@@ -15,7 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +94,21 @@ class ExperimentServiceTest {
         Optional<ExperimentDto> result = service.getExperiment(1L, false);
 
         assertThat(result).isEmpty();
+    }
+
+    // --- getExperimentsByUser ---
+
+    @Test
+    void getExperimentsByUser() {
+        Experiment experiment = Experiment.builder().id(1L).build();
+        ExperimentDto dto = mock(ExperimentDto.class);
+        Pageable pageable = PageRequest.of(0, 1);
+        when(experimentRepository.findByCreatedUserId(1L, pageable))
+                .thenReturn(new PageImpl<>(List.of(experiment)));
+        when(experimentMapper.toDto(experiment)).thenReturn(dto);
+
+        Page<ExperimentDto> result = service.getExperimentsByUser(1L, pageable);
+        assertThat(result).contains(dto);
     }
 
     // --- createExperiment ---

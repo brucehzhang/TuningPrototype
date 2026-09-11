@@ -20,6 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedModel;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -83,6 +89,42 @@ class ExperimentControllerTest {
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody()).isNull();
+    }
+
+    // --- getExperimentsByUser ---
+    @Test
+    void getExperimentsByUser_success_returns200WithBody() {
+        ExperimentDto dto = sampleExperimentDto(1L);
+        Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdTime"));
+        Page<ExperimentDto> page = new PageImpl<>(List.of(dto), pageable, 1);
+        when(experimentService.getExperimentsByUser(1L, pageable)).thenReturn(page);
+
+        var response = controller.getExperimentsByUser(1L, pageable);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        PagedModel<ExperimentDto> body = (PagedModel<ExperimentDto>) response.getBody();
+        assertThat(body.getContent()).containsExactly(dto);
+    }
+
+    @Test
+    void getExperimentsByUser_userError_returns400() {
+        Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdTime"));
+        when(experimentService.getExperimentsByUser(1L, pageable))
+                .thenThrow(new ExperimentException("bad", true));
+
+        var response = controller.getExperimentsByUser(1L, pageable);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+    }
+
+    @Test
+    void getExperimentsByUser_genericException_returns500() {
+        Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdTime"));
+        when(experimentService.getExperimentsByUser(1L, pageable)).thenThrow(new RuntimeException("boom"));
+
+        var response = controller.getExperimentsByUser(1L, pageable);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
     }
 
     // --- createExperiment ---

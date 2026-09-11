@@ -1,6 +1,8 @@
 package com.tuning.tuningprototype.repositories;
 
 import com.tuning.tuningprototype.models.db.entity.Experiment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -29,5 +31,5 @@ public interface ExperimentRepository extends JpaRepository<Experiment, Long> {
     /**
      * All experiments created by a given user, via the plain FK column.
      */
-    List<Experiment> findByCreatedUserId(Long userId);
+    Page<Experiment> findByCreatedUserId(Long userId, Pageable pageable);
 }

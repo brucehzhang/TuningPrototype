@@ -17,6 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +66,24 @@ public class ExperimentController {
     }
 
     /**
+     * Gets experiments by the user id.
+     *
+     * @param userId - id of the user to get experiments by
+     * @param pageable - Pageable containing page size, page number, and sorting for the experiment query. Pages start at 0.
+     * @return Page of ExperimentDto records, or 500 with the error
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getExperimentsByUser(@PathVariable long userId,
+                                                  @PageableDefault(page = 1, size = 20, sort = "createdTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+            return ResponseEntity.ok(new PagedModel<>(_experimentService.getExperimentsByUser(userId, pageable)));
+        } catch (Exception e) {
+            String message = "Exception occurred getting experiments for user %s: %s".formatted(userId, e.getMessage());
+            return handleException(e, message);
+        }
+    }
+
+    /**
      * Creates an experiment in DRAFT state
      *
      * @param createExperimentRequest The details for creating the experiment
@@ -74,7 +97,7 @@ public class ExperimentController {
             log.info("Received createExperiment request: {}", createExperimentRequest);
             return ResponseEntity.ok(_experimentService.createExperiment(createExperimentRequest, createdUserId));
         } catch (Exception e) {
-            String message = "Exception occurred creating experiment: " + e.getMessage();
+            String message = "Exception occurred creating experiment: %s".formatted(e.getMessage());
             return handleException(e, message);
         }
     }
@@ -188,7 +211,7 @@ public class ExperimentController {
                 throw new ExperimentException("Experiment id between path and body do not match.", true);
             }
             ExperimentDto experimentDto = _experimentService.getExperiment(experimentId, false)
-                    .orElseThrow(() -> new ExperimentException("No experiment found for the provided id " + experimentId, true));
+                    .orElseThrow(() -> new ExperimentException("No experiment found for the provided id %s".formatted(experimentId), true));
             return ResponseEntity.ok(_walletService.createWallet(createWalletRequest, experimentDto));
         } catch (Exception e) {
             String message = "Exception occurred creating wallet for experiment %s: %s".formatted(experimentId, e.getMessage());
