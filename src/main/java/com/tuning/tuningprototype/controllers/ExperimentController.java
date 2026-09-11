@@ -74,7 +74,7 @@ public class ExperimentController {
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getExperimentsByUser(@PathVariable long userId,
-                                                  @PageableDefault(page = 1, size = 20, sort = "createdTime", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                  @PageableDefault(page = 0, size = 20, sort = "createdTime", direction = Sort.Direction.DESC) Pageable pageable) {
         try {
             return ResponseEntity.ok(new PagedModel<>(_experimentService.getExperimentsByUser(userId, pageable)));
         } catch (Exception e) {
